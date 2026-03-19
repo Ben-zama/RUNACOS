@@ -1,0 +1,45 @@
+$breakpoints: (
+  'sm': 480px,
+  'md': 600px,
+  'lg': 1280px,
+  'xl': 1536px,
+  '2xl': 1800px
+);
+
+// 2. Helper function to check if the value is a map key or a custom unit
+@function get-bp-value($value) {
+  @if type-of($value) == 'string' and map-has-key($breakpoints, $value) {
+    @return map-get($breakpoints, $value);
+  } @else {
+    @return $value; // Returns the raw value (e.g., 720px, 50rem) if not in the map
+  }
+}
+
+// 3. The Ultimate Responsive Mixin
+@mixin respond-to($min: null, $max: null) {
+  $min-val: if($min, get-bp-value($min), null);
+  $max-val: if($max, get-bp-value($max), null);
+
+  // Range (Between Min and Max)
+  @if $min-val and $max-val {
+    // We subtract 1px from the max value to prevent overlapping breakpoints
+    @media screen and (min-width: $min-val) and (max-width: ($max-val - 1px)) {
+      @content;
+    }
+  } 
+  // Singular: Min-width only (e.g., 1280px and above)
+  @else if $min-val {
+    @media screen and (min-width: $min-val) {
+      @content;
+    }
+  } 
+  // Singular: Max-width only (e.g., Up to 1280px)
+  @else if $max-val {
+    @media screen and (max-width: ($max-val - 1px)) {
+      @content;
+    }
+  } 
+  @else {
+    @warn "You need to provide at least a $min or $max value.";
+  }
+}

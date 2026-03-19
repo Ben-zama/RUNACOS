@@ -1,0 +1,33 @@
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
+@import "bootstrap-icons/font/bootstrap-icons";
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: $background-color;
+    color: $text-color;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: $header-font;
+}
+
+input, textarea {
+    outline: none;
+    font-family: $alternate-font;
+}
+
+button {
+    font-family: $alternate-font;
+    cursor: pointer;
+    background: transparent;
+}
