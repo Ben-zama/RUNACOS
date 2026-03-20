@@ -1,5 +1,9 @@
 <template>
-    <div id="aboutPage">
+    <div id="contactPage">
+
+      <section class="bento">
+        <div class="box"></div>
+      </section>
 
     </div>
 </template>
@@ -9,7 +13,7 @@ definePageMeta({
   layout: {
     props: {
       showPageTitle: true,
-      pageTitle: 'About Us'
+      pageTitle: 'Contact Us'
     },
   },
 })

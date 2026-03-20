@@ -187,6 +187,14 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: {
+    props: {
+      showPageTitle: false,
+    },
+  },
+})
+
 import { ref, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -605,7 +613,7 @@ const { stop } = useIntersectionObserver(
     width: 100%;
     height: 100dvh;
     min-height: 600px;
-    max-height: 900px;
+    max-height: 1000px;
     overflow: hidden;
 
     // content
@@ -624,6 +632,7 @@ const { stop } = useIntersectionObserver(
       gap: 15px;
       background: $translucent-background-color;
       backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       .pill {
         margin-top: -50px;
         background: $translucent-secondary-color;
@@ -639,7 +648,7 @@ const { stop } = useIntersectionObserver(
         font-size: clamp($text-2xl, 5vw, $text-4xl);
         font-weight: 900;
         line-height: 1.1;
-        max-width: 700px;
+        max-width: 600px;
         background: linear-gradient(135deg, #fff, #c1c0c0);
         background-clip: text;
         -webkit-background-clip: text;
@@ -673,9 +682,19 @@ const { stop } = useIntersectionObserver(
       }
       @include respond-to(1024px, 1279px) {
         bottom: -20%;
+        left: 50%;
+        transform: translateX(-50%);
       }
-      @include respond-to($min: 1280px) {
+      @include respond-to(1280px, 1600px) {
         bottom: -30%;
+        left: 52%;
+        transform: translateX(-50%);
+      }
+      @include respond-to($min: 1600px) {
+        bottom: -30%;
+        max-width: 90%;
+        left: 52%;
+        transform: translateX(-50%);
       }
     }
 
@@ -702,10 +721,16 @@ const { stop } = useIntersectionObserver(
           font-size: 125px;
         }
       }
-      @include respond-to($min: 1280px) {
+      @include respond-to(1280px, 1599px) {
         bottom: -30%;
         textpath {
           font-size: 100px;
+        }
+      }
+      @include respond-to($min: 1600px) {
+        bottom: -35%;
+        textpath {
+          font-size: 80px;
         }
       }
     }
@@ -785,6 +810,7 @@ const { stop } = useIntersectionObserver(
     }
     .container {
       width: 100%;
+      min-width: 100%;
     }
   }
 
@@ -870,6 +896,8 @@ const { stop } = useIntersectionObserver(
       color: transparent;
     }
     .container {
+      width: 100%;
+      min-width: 100%;
       margin-top: 15px;
       display: flex;
       flex-direction: column;
@@ -936,6 +964,15 @@ const { stop } = useIntersectionObserver(
   }
 
   @include respond-to($min: 1024px) {
+    // Hero secrion 
+    .hero {
+      .content {
+        h1 {
+          max-width: 800px;
+        }
+      }
+    }
+
     // About section
     .about {
       padding: 75px;

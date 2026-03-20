@@ -52,26 +52,6 @@
       <NuxtLink to="/contact" @click="isMenuOpen = false">Contact</NuxtLink>
     </div>
 
-    <div v-if="showPageTitle" class="pageTitle" :key="route.path">
-      <ClientOnly>
-        <ColorBends
-          :rotation="0"
-          :speed="0.2"
-          transparent
-          :autoRotate="0"
-          :scale="1"
-          :frequency="1"
-          :warpStrength="1"
-          :mouseInfluence="0"
-          :parallax="0.5"
-          :noise="0.5"
-        />
-      </ClientOnly>
-      <div class="backdrop">
-        <h2>{{ pageTitle }}</h2>        
-      </div>
-    </div>
-
     <NuxtPage />
 
     <footer>
@@ -162,18 +142,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 
-const route = useRoute();
-
-const props = defineProps({
-  showPageTitle: {
-    type: Boolean,
-    default: true
-  },
-  pageTitle: {
-    type: String
-  } 
-})
-
 const isMenuOpen = ref(false);
 
 const headerRef = ref(null);
@@ -195,6 +163,8 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
+
+
 </script>
 
 <style lang="scss">
@@ -253,10 +223,9 @@ onUnmounted(() => {
       align-items: center;
       gap: 25px;
       a {
-        font-weight: bold;
         font-family: $alternate-font;
         transition: 0.2s;
-        &:hover, &.router-link-exact-active {
+        &:hover {
           color: $accent-color;
         }
       }
@@ -276,7 +245,6 @@ onUnmounted(() => {
     }
   }
 
-  // Mobile menu
   .menu {
     position: fixed;
     top: -150%;
@@ -307,58 +275,13 @@ onUnmounted(() => {
       font-family: $alternate-font;
       font-size: $text-lg;
       font-weight: bold;
-      &:hover, &.router-link-exact-active {
+      &:hover {
         color: $accent-color;
       }
     }
     @include respond-to($min: 600px) {
       border-radius: 0 0 0 30px;
       border-width: 0 0 1px 1px;
-    }
-  }
-
-  // Page Title
-  .pageTitle {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    animation: slideDownTitle 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    .backdrop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      background: $translucent-background-color;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      h2 {
-        margin-top: 25px;
-        font-size: clamp($text-2xl, 5vw, $text-4xl);
-        font-weight: 900;
-        line-height: 1.1;
-        max-width: 700px;
-        background: linear-gradient(135deg, #fff, #c1c0c0);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-      }
-    }
-    @keyframes slideDownTitle {
-      from {
-        opacity: 0;
-        transform: translateY(-30px); // Starts slightly higher
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0); // Rests in normal position
-      }
     }
   }
 
@@ -533,16 +456,10 @@ onUnmounted(() => {
           font-size: 125px;
         }
       }
-      @include respond-to(1280px, 1599px) {
-        transform: translateY(80%);
+      @include respond-to($min: "lg") {
+        transform: translateY(75%);
         textpath {
-          font-size: 100px;
-        }
-      }
-      @include respond-to($min: 1600px) {
-        transform: translateY(80%);
-        textpath {
-          font-size: 80px;
+          font-size: 125px;
         }
       }
       @media (min-height: 1200px) {

@@ -7,6 +7,7 @@
         snap-align="center"
         :autoplay="5000"
         :transition="750"
+        :gap="25"
         class="team-carousel"
         :breakpoints="{
           600: {

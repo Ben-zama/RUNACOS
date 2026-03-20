@@ -1,5 +1,5 @@
 <template>
-    <div id="aboutPage">
+    <div id="academicsPage">
 
     </div>
 </template>
@@ -9,7 +9,7 @@ definePageMeta({
   layout: {
     props: {
       showPageTitle: true,
-      pageTitle: 'About Us'
+      pageTitle: 'Academics'
     },
   },
 })
