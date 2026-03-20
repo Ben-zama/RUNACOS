@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       meta: [
-        { name: "color-scheme", content: "light" }
+        { name: "color-scheme", content: "only light" }
       ] 
     },
     layoutTransition: { name: 'layout', mode: 'out-in' },

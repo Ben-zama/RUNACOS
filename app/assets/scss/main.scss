@@ -5,6 +5,12 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
   color-scheme: only light;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: only light;
+  }
+}
+
 
 *, *::before, *::after {
     box-sizing: border-box;

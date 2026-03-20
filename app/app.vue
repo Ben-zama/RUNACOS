@@ -1,7 +1,7 @@
 <template>
   <div>
     <Head>
-      <Meta name="color-scheme" content="light" />
+      <Meta name="color-scheme" content="only light" />
     </Head>
     <NuxtLayout />
   </div>
