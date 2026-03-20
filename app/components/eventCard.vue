@@ -1,16 +1,17 @@
 <template>
-  <nuxt-link class="blogCard" :to="to">
+  <nuxt-link class="eventCard" :to="to">
     <div class="image">
-      <img :src="imageSrc" :alt="imageAlt" />
+      <img :src="image" :alt="title" />
     </div>
     
-    <div class="tags" v-if="tags && tags.length">
-      <div 
-        class="tag" 
-        v-for="(tag, index) in tags" 
-        :key="index"
-      >
-        {{ tag }}
+    <div class="meta" v-if="date || location">
+      <div class="meta-item" v-if="date">
+        <i class="bi bi-calendar3"></i>
+        <span>{{ date }}</span>
+      </div>
+      <div class="meta-item" v-if="location">
+        <i class="bi bi-geo-alt"></i>
+        <span>{{ location }}</span>
       </div>
     </div>
     
@@ -22,54 +23,33 @@
     </div>
     
     <p v-if="description">{{ description }}</p>
-
-    <div class="card-footer" v-if="author || date">
-      <div class="author" v-if="author">
-        <i class="bi bi-person-circle"></i>
-        <span>{{ author }}</span>
-      </div>
-      <div class="date" v-if="date">
-        <i class="bi bi-calendar3"></i>
-        <span>{{ date }}</span>
-      </div>
-    </div>
   </nuxt-link>
 </template>
 
 <script setup>
-// Define the props this component will accept
 defineProps({
   to: {
     type: [String, Object],
-    required: true,
+    required: false,
     default: '/'
   },
-  imageSrc: {
+  image: {
     type: String,
     required: true
-  },
-  imageAlt: {
-    type: String,
-    default: 'Blog post image'
-  },
-  tags: {
-    type: Array,
-    default: () => [] // Accepts an array of strings
   },
   title: {
     type: String,
     required: true
   },
-  description: {
-    type: String,
-    required: false
-  },
-  // New props for Author and Date
-  author: {
-    type: String,
-    required: false
-  },
   date: {
+    type: String,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  },
+  description: {
     type: String,
     required: false
   }
@@ -77,13 +57,13 @@ defineProps({
 </script>
 
 <style lang="scss" scoped>
-.blogCard {
+.eventCard {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 15px;
   cursor: pointer;
-  text-decoration: none; /* Just in case nuxt-link adds underlines */
+  text-decoration: none;
   color: inherit;
   
   /* Bento Card Base Styles */
@@ -108,23 +88,31 @@ defineProps({
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease; /* Smooth zoom setup */
+      transition: transform 0.5s ease;
     }
   }
 
-  .tags {
+  /* Styling for Date and Location */
+  .meta {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
     
-    .tag {
-      padding: 4px 10px;
-      /* Matched to the bento form input style */
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       background: rgba(255, 255, 255, 0.05); 
       border: 1px solid $translucent-secondary-color-50;
       font-family: $alternate-font;
       font-size: $text-sm;
       border-radius: 6px;
+
+      i {
+        color: $accent-color;
+        font-size: 0.95em;
+      }
     }
   }
 
@@ -136,16 +124,8 @@ defineProps({
     gap: 25px;
     
     h3 {
-      font-size: $text-xl;
-      font-weight: 900;
-      line-height: 1.1;
-      max-width: 600px;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
       flex-shrink: 1;
+      font-size: $text-lg;
       margin: 0;
       transition: 0.3s;
     }
@@ -159,7 +139,6 @@ defineProps({
       justify-content: center;
       align-items: center;
       border-radius: 50%;
-      /* Matched to bento style */
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid $translucent-secondary-color-50;
       overflow: hidden;
@@ -176,54 +155,32 @@ defineProps({
     opacity: 0.8;
     margin: 0;
     line-height: 1.5;
-    /* Optional: Truncate description so cards stay relatively uniform */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* --- New Author & Date Footer Styles --- */
-  .card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-top: auto; /* Pushes to the very bottom */
-    padding-top: 15px;
-    border-top: 1px solid $translucent-secondary-color-50;
-    font-size: $text-sm;
-    font-family: $alternate-font;
-    opacity: 0.9;
-
-    .author, .date {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      i {
-        color: $accent-color;
-      }
-    }
-  }
-  
+  /* --- Hover States --- */
   &:hover {
     border-color: $accent-color;
-    transform: translateY(-5px); /* Gentle lift effect */
+    transform: translateY(-5px);
 
     .image {
       img {
-        transform: scale(1.05); /* Gentle image zoom */
+        transform: scale(1.05);
       }
     }
 
     .span {
+      h3 {
+        color: $accent-color;
+      }
       .icon {
         background: $accent-color;
         border-color: $accent-color;
         i {
-          color: #fff; /* Swap to white on hover */
+          color: #fff; /* Swap icon color to match background */
         }
       }
     }

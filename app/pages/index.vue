@@ -168,18 +168,20 @@
     </section>
 
     <!-- Blogs -->
-   <section class="blogs" ref="blogsRef">
+    <section class="blogs" ref="blogsRef">
       <div class="pill" ref="blogsPillRef">Blogs</div>
       <h2 ref="blogsTitleRef">Latest blogs from staff, student and alumni</h2>
       <div class="container" ref="blogsContainerRef">
-        <BlogCard 
-          v-for="post in posts" 
+        <BlogCard
+          v-for="post in posts"
           :key="post.id"
           :to="post.link"
           :imageSrc="post.image"
           :tags="post.tags"
           :title="post.title"
           :description="post.description"
+          :author="post.author"
+          :date="post.date"
         />
       </div>
     </section>
@@ -193,7 +195,7 @@ definePageMeta({
       showPageTitle: false,
     },
   },
-})
+});
 
 import { ref, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
@@ -333,29 +335,35 @@ const team = ref([
 const posts = [
   {
     id: 1,
-    link: '/blog/scaling-financial-services',
-    image: 'sample.jpg',
-    tags: ['Customer Stories', 'AI', 'Growth'],
-    title: 'Scaling Financial Services Personalization for $100Bn+ Enterprise',
-    description: 'Coframe Drives over 26% Lift in Financial Services'
+    link: "/blog/scaling-financial-services",
+    image: "sample.jpg",
+    tags: ["Customer Stories", "AI", "Growth"],
+    title: "Scaling Financial Services Personalization for $100Bn+ Enterprise",
+    description: "Coframe Drives over 26% Lift in Financial Services",
+    author: "Mark Henry",
+    date: "March 13, 2026"
   },
   {
     id: 2,
-    link: '/blog/next-post',
-    image: 'sample.jpg',
-    tags: ['Engineering', 'Vue3'],
-    title: 'How we built a reusable component system',
-    description: 'A deep dive into Nuxt 3 architectures.'
+    link: "/blog/next-post",
+    image: "sample.jpg",
+    tags: ["Engineering", "Vue3"],
+    title: "How we built a reusable component system",
+    description: "A deep dive into Nuxt 3 architectures.",
+    author: "Mark Henry",
+    date: "March 13, 2026"
   },
   {
     id: 3,
-    link: '/blog/next-post',
-    image: 'sample.jpg',
-    tags: ['Engineering', 'Vue3'],
-    title: 'How we built a reusable component system',
-    description: 'A deep dive into Nuxt 3 architectures.'
-  }
-]
+    link: "/blog/next-post",
+    image: "sample.jpg",
+    tags: ["Engineering", "Vue3"],
+    title: "How we built a reusable component system",
+    description: "A deep dive into Nuxt 3 architectures.",
+    author: "Mark Henry",
+    date: "March 13, 2026"
+  },
+];
 
 let heroTl;
 let aboutTl;
@@ -547,36 +555,40 @@ onMounted(() => {
       "-=0.4"
     );
 
-    //Blogs animations
-    blogsTl = gsap.timeline({
-  scrollTrigger: {
-    trigger: blogsRef.value,
-    start: "top 75%",
-    toggleActions: "play none none reverse",
-  },
-});
+  //Blogs animations
+  blogsTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: blogsRef.value,
+      start: "top 75%",
+      toggleActions: "play none none reverse",
+    },
+  });
 
-blogsTl
-  .from(blogsPillRef.value, {
-    y: 30,
-    opacity: 0,
-    duration: 0.6,
-    ease: "power2.out",
-  })
+  blogsTl
+    .from(blogsPillRef.value, {
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+      ease: "power2.out",
+    })
     .from(
       blogsTitleRef.value,
       { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" },
       "-=0.4"
     )
-    .from(
+    .fromTo(
       // Target the children (the BlogCards) for a staggered entrance
       blogsContainerRef.value.children,
-      { 
-        y: 50, 
-        opacity: 0, 
-        duration: 0.8, 
+      {
+        y: 50,
+        opacity: 0,
+        duration: 0.8,
         stagger: 0.15, // Cascades the animation across the cards
-        ease: "power2.out" 
+        ease: "power2.out",
+      },
+      {
+        y: 0,
+        opacity: 1,
       },
       "-=0.4"
     );
@@ -901,7 +913,7 @@ const { stop } = useIntersectionObserver(
       margin-top: 15px;
       display: flex;
       flex-direction: column;
-      gap: 50px;
+      gap: 25px;
     }
   }
 
@@ -950,7 +962,7 @@ const { stop } = useIntersectionObserver(
       }
     }
 
-    //Blogs 
+    //Blogs
     .blogs {
       padding: 75px 50px;
       h2 {
@@ -959,12 +971,13 @@ const { stop } = useIntersectionObserver(
       .container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+        gap: 50px;
       }
     }
   }
 
   @include respond-to($min: 1024px) {
-    // Hero secrion 
+    // Hero secrion
     .hero {
       .content {
         h1 {
@@ -1034,6 +1047,7 @@ const { stop } = useIntersectionObserver(
       .container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
+        gap: 50px;
       }
     }
   }

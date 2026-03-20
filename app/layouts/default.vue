@@ -149,7 +149,6 @@
           :speed="2"
           :curve-amount="-400"
           direction="left"
-          :interactive="true"
           class="textLoop"
         />
       </clientOnly>
@@ -322,7 +321,7 @@ onUnmounted(() => {
     position: relative;
     width: 100%;
     height: 250px;
-    animation: slideDownTitle 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideDownTitle 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     .backdrop {
       position: absolute;
       top: 0;
@@ -334,8 +333,8 @@ onUnmounted(() => {
       justify-content: center;
       text-align: center;
       background: $translucent-background-color;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       h2 {
         margin-top: 25px;
         font-size: clamp($text-2xl, 5vw, $text-4xl);
@@ -575,6 +574,10 @@ onUnmounted(() => {
       padding: 125px 25px 50px 25px;
     }
 
+    .pageTitle {
+      height: 350px;
+    }
+
     footer {
       gap: 100px;
 
@@ -629,6 +632,10 @@ onUnmounted(() => {
       }
     }
 
+    .pageTitle {
+      height: 400px;
+    }
+
     footer {
       gap: 100px;
 
@@ -645,6 +652,7 @@ onUnmounted(() => {
         }
         form {
           width: 50%;
+          max-width: 600px;
           flex-direction: row;
           background: $secondary-color;
           border-radius: 25px;
