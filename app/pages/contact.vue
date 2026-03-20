@@ -2,7 +2,15 @@
     <div id="contactPage">
 
       <section class="bento">
-        <div v-for="item in contactPage" :key="item" class="box"></div>
+        <div v-for="item in contactPage" :key="item" class="box">
+          <div class="top">
+            <i :class="item.icon"></i>
+          <h3>Give us a call</h3>
+          </div>
+          <div class="bottom">
+            <a href=""></a>
+          </div>
+        </div>
       </section>
 
     </div>
@@ -19,7 +27,7 @@ definePageMeta({
 })
 
 const contactPage = [
-  { text: '', icon: 'bi bi-', link: '' }
+  { text: '', icon: 'bi bi-phone', link: '' }
 ]
 </script>
 

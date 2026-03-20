@@ -1,5 +1,8 @@
 <template>
   <div>
+    <Head>
+      <Meta name="color-scheme" content="light" />
+    </Head>
     <NuxtLayout />
   </div>
 </template>
