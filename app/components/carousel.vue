@@ -54,7 +54,7 @@ defineProps({
 defineEmits(["cardClick"]);
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .team-carousel {
   width: 100%;
   perspective: 1000px;
@@ -90,6 +90,7 @@ defineEmits(["cardClick"]);
   border-radius: 24px;
   overflow: hidden;
   background: $background-color;
+  cursor: grab;
 }
 
 .profile-img {

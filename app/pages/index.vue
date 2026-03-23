@@ -28,7 +28,7 @@
           digital technologies
         </p>
         <div class="ctas" ref="ctasRef">
-          <ctaButton buttonLabel="Student" to="/student" />
+          <ctaButton buttonLabel="Student" to="/academics" />
           <ctaButton buttonLabel="Alumni" to="/alumni" />
         </div>
       </div>
