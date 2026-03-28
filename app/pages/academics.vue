@@ -131,6 +131,10 @@ definePageMeta({
   },
 });
 
+useHead({
+  title: 'Academics',
+})
+
 // Filter States
 const searchQuery = ref("");
 const selectedDepartment = ref("");

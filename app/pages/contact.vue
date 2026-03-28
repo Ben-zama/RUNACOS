@@ -76,6 +76,10 @@ definePageMeta({
   },
 });
 
+useHead({
+  title: 'Contact Us',
+})
+
 const faultsStore = useFaultsStore();
 
 // Map form fields strictly to the API schema

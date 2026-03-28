@@ -100,6 +100,10 @@ definePageMeta({
   },
 });
 
+useHead({
+  title: 'Alumni',
+})
+
 const spotlights = [
   {
     id: 1,

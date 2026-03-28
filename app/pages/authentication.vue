@@ -155,26 +155,46 @@ const form = reactive({
 const handleSubmit = async () => {
   try {
     if (isLogin.value) {
-      console.log('Logging in with:', { email: form.email, password: form.password })
-      alert('Login flow triggered (API endpoint pending)')
+      // --- LOGIN FLOW ---
+      await authStore.login({
+        email: form.email,
+        password: form.password
+      })
+      alert('Login successful!')
+      // Redirect to dashboard
+      // navigateTo('/dashboard')
+      
     } else {
+      // --- SIGNUP FLOW ---
+      // 1. Build the base payload WITH the password
       const payload = {
         username: form.username,
         email: form.email,
-        password: form.password, 
+        password: form.password,
         role: form.role,
       }
 
       if (form.role === 'student') {
-         payload.studentInfo = form.studentInfo
+         payload.studentInfo = {
+            department: form.studentInfo.department,
+            matricNumber: form.studentInfo.matricNumber
+         }
       } else if (form.role === 'alumni') {
-         payload.alumniInfo = form.alumniInfo
+         payload.alumniInfo = {
+            graduationYear: form.alumniInfo.graduationYear,
+            jobTitle: form.alumniInfo.jobTitle,
+            currentCompany: form.alumniInfo.currentCompany,
+            isStar: form.alumniInfo.isStar
+         }
       }
       
+      // 3. Send it!
       await authStore.signup(payload)
-      alert('Account created successfully!')
-      // Optionally toggle back to login tab here
-      // isLogin.value = true;
+      alert('Account created successfully! Please log in.')
+      
+      // Automatically switch to the login tab after successful signup
+      isLogin.value = true
+      form.password = '' // Clear the password field for safety
     }
   } catch (err) {
     console.error('Auth error:', err)

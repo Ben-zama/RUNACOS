@@ -147,6 +147,10 @@ definePageMeta({
   },
 });
 
+useHead({
+  title: 'About Us',
+})
+
 const aboutRef = ref(null);
 const aboutPillRef = ref(null);
 const aboutInfoRef = ref(null);

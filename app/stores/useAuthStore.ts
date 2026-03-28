@@ -18,6 +18,7 @@ export interface AlumniInfo {
 export interface UserSignupPayload {
   username: string
   email: string
+  password: string
   role?: string // Defaults to 'student'
   studentInfo?: StudentInfo
   alumniInfo?: AlumniInfo | null
@@ -53,8 +54,39 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Placeholder for Login
-  const login = async (credentials: any) => {
-    console.warn('Login endpoint not yet defined in API spec')
+// --- CUSTOM LOGIN ACTION ---
+  const login = async (credentials: { email: string; password?: string }) => {
+    isLoading.value = true
+    authError.value = null
+    
+    try {
+      // 1. Fetch the entire list of users from the API
+      const users = await apiFetch<any[]>('/user')
+      
+      // 2. Search the array for a user with a matching email
+      const matchedUser = users.find((u) => u.email === credentials.email)
+      
+      if (matchedUser) {
+        // Success! We found the user.
+        // Note: Since the API doesn't store passwords, we are bypassing the password check here.
+        currentUser.value = matchedUser
+        
+        // Optional: Save the user's email or ID to a cookie so they stay logged in on refresh
+        // const authCookie = useCookie('auth_user')
+        // authCookie.value = matchedUser.email
+        
+        return matchedUser
+      } else {
+        // If `.find()` returns undefined, the email isn't in the database
+        throw new Error('No account found with this email address.')
+      }
+      
+    } catch (error: any) {
+      authError.value = error.message || 'Login failed. Please try again.'
+      throw error
+    } finally {
+      isLoading.value = false
+    }
   }
 
   return { currentUser, isLoading, authError, signup, login }

@@ -56,12 +56,32 @@ export const useFaultsStore = defineStore('faults', () => {
         method: 'DELETE'
       })
       // Instantly remove it from the UI without reloading the page
-      faults.value = faults.value.filter(fault => fault.id !== id && fault.id !== id)
+      faults.value = faults.value.filter(fault => fault.id !== id)
     } catch (err: any) {
       error.value = err.message || 'Failed to delete fault'
       throw err
     }
   }
 
-  return { faults, isLoading, error, fetchFaults, submitFault, deleteFault }
+  const updateFault = async (id: string, updates: Partial<FaultPayload>) => {
+    try {
+      const res = await apiFetch(`/faults/${id}`, {
+        method: 'PATCH',
+        body: updates
+      })
+      
+      // Find the fault in our local array and update it instantly
+      const index = faults.value.findIndex(f => f.id === id)
+      if (index !== -1) {
+        faults.value[index] = { ...faults.value[index], ...updates }
+      }
+      
+      return res
+    } catch (err: any) {
+      error.value = err.message || 'Failed to update fault'
+      throw err
+    }
+  }
+
+  return { faults, isLoading, error, fetchFaults, submitFault, deleteFault, updateFault }
 })

@@ -6,9 +6,15 @@ export const useRunacosApi = () => {
     onRequest({ request, options }) {
       // You can add Authorization headers here later if the API requires tokens
     },
-    onResponseError({ response }) {
-      // The API returns a specific Error schema with code, status, and message [cite: 977, 980, 984, 988]
-      console.error(`API Error: ${response._data?.message || 'Something went wrong'}`)
+onResponseError({ response }) {
+      // LOG THE FULL DATA SO WE CAN SEE THE EXACT FASTAPI ERROR
+      console.error('Full API Error Response:', response._data)
+      
+      const errorMsg = response._data?.detail 
+        ? JSON.stringify(response._data.detail) // Grabs strict validation errors
+        : response._data?.message || 'Something went wrong'
+        
+      console.error(`Parsed Error: ${errorMsg}`)
     }
   })
 

@@ -175,7 +175,7 @@
         <BlogCard
           v-for="post in posts"
           :key="post.id"
-          :to="post.link"
+          :to="`/posts/${post.id}`"
           :imageSrc="post.image"
           :tags="post.tags"
           :title="post.title"
@@ -196,6 +196,10 @@ definePageMeta({
     },
   },
 });
+
+useHead({
+  title: 'RUNACOS',
+})
 
 import { ref, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
@@ -334,34 +338,37 @@ const team = ref([
 
 const posts = [
   {
-    id: 1,
-    link: "/blog/scaling-financial-services",
-    image: "sample.jpg",
-    tags: ["Customer Stories", "AI", "Growth"],
-    title: "Scaling Financial Services Personalization for $100Bn+ Enterprise",
-    description: "Coframe Drives over 26% Lift in Financial Services",
+    id: "scaling-financial",
+    type: "blog",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80",
+    tags: ["AI", "Growth"],
+    title: "Scaling Financial Services",
+    description:
+      "Coframe Drives over 26% Lift in conversion rates using new predictive models.",
     author: "Mark Henry",
-    date: "March 13, 2026"
+    date: "March 13, 2026",
   },
   {
-    id: 2,
-    link: "/blog/next-post",
-    image: "sample.jpg",
-    tags: ["Engineering", "Vue3"],
-    title: "How we built a reusable component system",
-    description: "A deep dive into Nuxt 3 architectures.",
+    id: "vue3-components",
+    type: "blog",
+    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80",
+    tags: ["Vue3"],
+    title: "Reusable component system",
+    description:
+      "A deep dive into Nuxt 3 architectures and how to build scalable UI libraries.",
     author: "Mark Henry",
-    date: "March 13, 2026"
+    date: "March 13, 2026",
   },
   {
-    id: 3,
-    link: "/blog/next-post",
-    image: "sample.jpg",
-    tags: ["Engineering", "Vue3"],
-    title: "How we built a reusable component system",
-    description: "A deep dive into Nuxt 3 architectures.",
-    author: "Mark Henry",
-    date: "March 13, 2026"
+    id: "api-design",
+    type: "blog",
+    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80",
+    tags: ["Engineering"],
+    title: "REST vs GraphQL in 2026",
+    description:
+      "Choosing the right API paradigm for your next major tech stack.",
+    author: "Jane Doe",
+    date: "March 15, 2026",
   },
 ];
 
