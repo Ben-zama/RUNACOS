@@ -1,14 +1,14 @@
 <template>
   <div id="contactPage">
     <section class="bento">
-      <div v-for="item in contactPage" :key="item" class="box">
+      <div v-for="item in contactPage" :key="item.text" class="box">
         <div class="top">
           <i :class="item.icon"></i>
           <h3>{{ item.text }}</h3>
         </div>
 
         <div class="bottom">
-          <a v-for="link in item.links" :key="link" :href="link.url">{{
+          <a v-for="link in item.links" :key="link.label" :href="link.url">{{
             link.label
           }}</a>
         </div>
@@ -16,31 +16,41 @@
     </section>
 
     <section class="form-map">
-      <form @submit.prevent>
-        <h3>Send a mail</h3>
+      <form @submit.prevent="handleFaultSubmit">
+        <h3>Report a fault</h3>
         <div class="span">
           <div class="input-control">
-            <label for="">Name</label>
-            <input type="text" required />
+            <label for="title">Fault Title</label>
+            <input id="title" v-model="form.title" type="text" placeholder="e.g., Broken projector in Room 2" required />
           </div>
 
           <div class="input-control">
-            <label for="">email</label>
-            <input type="eamil" required />
+            <label for="studentId">Student/Matric ID</label>
+            <input id="studentId" v-model="form.studentId" type="text" placeholder="RUN/CSC/..." required />
           </div>
         </div>
 
         <div class="textarea-control">
-          <label for="">Message</label>
-          <textarea required />
+          <label for="description">Message/Description</label>
+          <textarea id="description" v-model="form.description" placeholder="Describe the issue in detail..." required />
         </div>
-        <button type="submit">
-          <ctaButton buttonLabel="Send message" link="" />
+        
+        <p v-if="faultsStore.error" style="color: #ff4757; font-size: 0.9rem; margin: 0;">
+          <i class="bi bi-exclamation-circle"></i> {{ faultsStore.error }}
+        </p>
+
+        <button type="submit" :disabled="faultsStore.isLoading" style="background: transparent; border: none; padding: 0; cursor: pointer;">
+           <ctaButton 
+             :buttonLabel="faultsStore.isLoading ? 'Sending...' : 'Report fault'" 
+             link="" 
+             :style="{ opacity: faultsStore.isLoading ? 0.7 : 1 }"
+           />
         </button>
       </form>
+      
       <div class="map">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1715.1309670264927!2d4.4566802135541845!3d7.681308157424518!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10382bf4cfc23a5d%3A0xdc6c4b4c1b582ddf!2sRedeemer&#39;s%20University%20Ede!5e0!3m2!1sen!2sng!4v1774012336503!5m2!1sen!2sng"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1715.1309670264927!2d4.4566802135541845!3d7.681308157424518!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10382bf4cfc23a5d%3A0xdc6c4b4c1b582ddf!2sRedeemer's%20University%20Ede!5e0!3m2!1sen!2sng!4v1774012336503!5m2!1sen!2sng"
           width="600"
           height="450"
           style="border: 0"
@@ -54,8 +64,8 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import gsap from "gsap";
+import { reactive } from "vue";
+import { useFaultsStore } from "../stores/useFaultsStore";
 
 definePageMeta({
   layout: {
@@ -65,6 +75,39 @@ definePageMeta({
     },
   },
 });
+
+const faultsStore = useFaultsStore();
+
+// Map form fields strictly to the API schema
+const form = reactive({
+  title: "",
+  studentId: "",
+  description: ""
+});
+
+const handleFaultSubmit = async () => {
+  try {
+    // Construct payload, invisibly injecting the required 'status' and 'response' fields
+    const payload = {
+      title: form.title,
+      studentId: form.studentId,
+      description: form.description,
+      status: "in-progress", // Ignored by UI, required by API
+      response: "Pending admin review" // Ignored by UI, required by API
+    };
+
+    await faultsStore.submitFault(payload);
+    
+    alert("Fault reported successfully!");
+    
+    form.title = "";
+    form.studentId = "";
+    form.description = "";
+
+  } catch (error) {
+    console.error("Failed to submit fault report", error);
+  }
+};
 
 const contactPage = [
   {
@@ -103,33 +146,6 @@ const contactPage = [
     links: [{ url: "#", label: "@Runacos" }],
   },
 ];
-
-onMounted(() => {
-  gsap.fromTo(
-    ".bento .box",
-    { opacity: 0, y: 50 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      stagger: 0.15,
-      ease: "power3.out",
-    }
-  );
-
-  // 4. Form and Map Animation
-  gsap.fromTo(
-    [".form-map form", ".form-map .map"],
-    { opacity: 0, y: 50 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      stagger: 0.2,
-      ease: "power3.out",
-    }
-  );
-});
 </script>
 
 <style lang="scss">

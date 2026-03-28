@@ -68,7 +68,7 @@
         />
       </ClientOnly>
       <div class="backdrop">
-        <h2>{{ pageTitle }}</h2>        
+        <h2>{{ dynamicPageTitle }}</h2>        
       </div>
     </div>
 
@@ -160,17 +160,17 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 
 const route = useRoute();
+
+const dynamicPageTitle = computed(() => route.meta.pageTitle || '');
 
 const props = defineProps({
   showPageTitle: {
     type: Boolean,
     default: true
-  },
-  pageTitle: {
-    type: String
-  } 
+  }, 
 })
 
 const isMenuOpen = ref(false);
@@ -207,7 +207,7 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 5;
+    z-index: 10;
     transition: background-color 0.3s ease;
 
     &.scrolled {
@@ -290,7 +290,7 @@ onUnmounted(() => {
     background: $translucent-alternate-color;
     backdrop-filter: blur(50px);
     -webkit-backdrop-filter: blur(50px);
-    z-index: 1;
+    z-index: 5;
     border: solid $translucent-secondary-color-50;
     border-width: 0 0 1px 0;
     border-radius: 0 0 30px 30px;
