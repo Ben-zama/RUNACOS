@@ -238,13 +238,13 @@ onMounted(() => {
     position: absolute;
     width: 100%;
     height: 400px;
-    border-radius: 20px;
+    border-radius: 0 0 20px 20px;
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1;
-    margin-bottom: 400px;
+    margin-bottom: 300px;
 
     // The actual text content
     .content {
@@ -259,7 +259,7 @@ onMounted(() => {
       padding: 40px;
       width: 100%;
       height: 100%;
-       background: rgba(0, 0, 0, 0.4); // Darkens the bright colors slightly
+       background: $translucent-background-color; // Darkens the bright colors slightly
       backdrop-filter: blur(10px); // Blurs the ColorBends effect
       -webkit-backdrop-filter: blur(10px);
 
@@ -270,14 +270,13 @@ onMounted(() => {
         gap: 10px;
 
         .pill {
-          background: rgba(0, 0, 0, 0.5);
+          background: $translucent-background-color;
           backdrop-filter: blur(5px);
           border: 1px solid rgba(255, 255, 255, 0.2);
           padding: 6px 16px;
           border-radius: 30px;
           font-size: 0.85rem;
           font-weight: 600;
-          color: #fff;
 
           &.type-pill {
             background: rgba($accent-color, 0.8);

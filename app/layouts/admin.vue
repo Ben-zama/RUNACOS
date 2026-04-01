@@ -16,10 +16,11 @@
 
       <nav class="nav-links">
         <NuxtLink to="/admin" active-class="active" exact><i class="bi bi-grid-1x2"></i> Overview</NuxtLink>
+        <NuxtLink to="/admin/student" active-class="active"><i class="bi bi-people"></i> Students</NuxtLink>
         <NuxtLink to="/admin/resources" active-class="active"><i class="bi bi-folder2-open"></i> Academic Resources</NuxtLink>
-        <NuxtLink to="/admin/news" active-class="active"><i class="bi bi-newspaper"></i> Blog & News</NuxtLink>
+        <NuxtLink to="/admin/posts" active-class="active"><i class="bi bi-newspaper"></i> Blog & News</NuxtLink>
         <NuxtLink to="/admin/events" active-class="active"><i class="bi bi-calendar-event"></i> Events</NuxtLink>
-        <NuxtLink to="/admin/alumni" active-class="active"><i class="bi bi-people"></i> Alumni Directory</NuxtLink>
+        <NuxtLink to="/admin/alumni" active-class="active"><i class="bi bi-mortarboard"></i> Alumni Directory</NuxtLink>
         <NuxtLink to="/admin/faults" active-class="active"><i class="bi bi-radioactive"></i> Faults</NuxtLink>
       </nav>
 

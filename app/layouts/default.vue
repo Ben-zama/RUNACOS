@@ -1,5 +1,13 @@
 <template>
   <div id="defaultLayout">
+    <div class="page-loader" :class="{ 'is-loaded': !isLoading }">
+      <div class="loader">
+        <div class="logo">
+          <img src="~/assets/logo.png" alt="">
+        </div>
+      </div>
+    </div>
+
     <header ref="headerRef" :class="{ scrolled: isScrolled }">
       <div class="logo">
         <NuxtLink to="/">
@@ -32,7 +40,7 @@
       </div>
 
       <div class="cta">
-        <ctaButton button-label="Techify 2026" />
+        <ctaButton button-label="Sign In" />
       </div>
     </header>
 
@@ -159,10 +167,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useRoute, useNuxtApp } from "#imports";
 
 const route = useRoute();
+const nuxtApp = useNuxtApp();
 
 const dynamicPageTitle = computed(() => route.meta.pageTitle || '');
 
@@ -174,10 +183,20 @@ const props = defineProps({
 })
 
 const isMenuOpen = ref(false);
-
 const headerRef = ref(null);
-
 const isScrolled = ref(false);
+
+// Loader State
+const isLoading = ref(true);
+
+// Hook into Nuxt routing to show/hide loader on page change
+nuxtApp.hook("page:start", () => {
+  isLoading.value = true;
+});
+
+nuxtApp.hook("page:finish", () => {
+  isLoading.value = false;
+});
 
 const handleScroll = () => {
   if (window.scrollY > 150) {
@@ -189,6 +208,15 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  
+  // Hide loader on initial mount if the document is already complete
+  if (document.readyState === "complete") {
+    isLoading.value = false;
+  } else {
+    window.addEventListener("load", () => {
+      isLoading.value = false;
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -198,6 +226,77 @@ onUnmounted(() => {
 
 <style lang="scss">
 #defaultLayout {
+  /* Page Loader */
+  .page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: $translucent-background-color-50;
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  overflow: hidden; // Important: Prevents the large slider from causing scrollbars
+
+  &.is-loaded {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .logo {
+    position: relative;
+    width: 250px;
+    height: 250px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
+    }
+  }
+
+  // The Full-Screen Glass Slider
+  &::after {
+    content: "";
+    position: absolute;
+    // Oversize it so the rotated edges don't show on screen
+    top: -100%;
+    left: -100%;
+    width: 300%; 
+    height: 30vh; // Thickness of the glass pane
+    z-index: 2;
+    pointer-events: none; // Ensures the slider doesn't accidentally intercept clicks
+    
+    // The visual "glass" gradient
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      $translucent-secondary-color 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+
+    // Animate the sweep across the entire screen
+    animation: glass-slide-fullscreen 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+// Keyframes for the full-screen diagonal sweep
+@keyframes glass-slide-fullscreen {
+  0% {
+    transform: rotate(45deg) translateY(-150vh);
+  }
+  100% {
+    transform: rotate(45deg) translateY(150vh);
+  }
+}
+
   /* Header */
   header {
     position: absolute;

@@ -6,12 +6,13 @@ export interface EventPayload {
   id?: string
   _id?: string
   title: string
-  type: string
+  eventType: string
   studentId: string
   status: string
   response: string
-  eventTime: string // ISO 8601 date-time string
+  eventTime: string 
   description: string
+  fileUrl: string // The image URL returned by the backend
 }
 
 export const useEventsStore = defineStore('events', () => {
@@ -34,15 +35,16 @@ export const useEventsStore = defineStore('events', () => {
     }
   }
 
-  const createEvent = async (eventData: EventPayload) => {
+  // UPDATED: Now accepts FormData
+  const createEvent = async (formData: FormData) => {
     isLoading.value = true
     error.value = null
     try {
       const res = await apiFetch('/events', {
         method: 'POST',
-        body: eventData
+        body: formData // $fetch handles the multipart headers automatically
       })
-      await fetchEvents() // Refresh the list after creating
+      await fetchEvents() 
       return res
     } catch (err: any) {
       error.value = err.message || 'Failed to create event'
@@ -52,35 +54,35 @@ export const useEventsStore = defineStore('events', () => {
     }
   }
 
-  const updateEvent = async (id: string, updates: Partial<EventPayload>) => {
-    try {
-      const res = await apiFetch(`/events/${id}`, {
-        method: 'PATCH',
-        body: updates
-      })
-      // Instantly update the UI
-      const index = events.value.findIndex(e => e.id === id || e._id === id)
-      if (index !== -1) {
-        events.value[index] = { ...events.value[index], ...updates }
-      }
-      return res
-    } catch (err: any) {
-      error.value = err.message || 'Failed to update event'
-      throw err
-    }
+  // UPDATED: Now accepts FormData for updating the image as well
+const updateEvent = async (idToUpdate: string, formData: FormData) => {
+  isLoading.value = true   // missing
+  error.value = null       // missing
+  try {
+    const res = await apiFetch(`/events/${idToUpdate}`, { method: 'PATCH', body: formData })
+    await fetchEvents()
+    return res
+  } catch (err: any) {
+    error.value = err.message || 'Failed to update event'
+    throw err
+  } finally {
+    isLoading.value = false  // missing
   }
+}
 
-  const deleteEvent = async (id: string) => {
-    try {
-      await apiFetch(`/events/${id}`, {
-        method: 'DELETE'
-      })
-      events.value = events.value.filter(e => e.id !== id && e._id !== id)
-    } catch (err: any) {
-      error.value = err.message || 'Failed to delete event'
-      throw err
-    }
+const deleteEvent = async (idToDelete: string) => {
+  isLoading.value = true   // missing
+  error.value = null       // missing
+  try {
+    await apiFetch(`/events/${idToDelete}`, { method: 'DELETE' })
+    events.value = events.value.filter(e => e.id !== idToDelete && e._id !== idToDelete)
+  } catch (err: any) {
+    error.value = err.message || 'Failed to delete event'
+    throw err
+  } finally {
+    isLoading.value = false  // missing
   }
+}
 
   return { events, isLoading, error, fetchEvents, createEvent, updateEvent, deleteEvent }
 })

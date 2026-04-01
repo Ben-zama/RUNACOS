@@ -68,10 +68,10 @@
                </div>
             </div>
 
-            <div v-if="form.role === 'student'" class="form-row">
+            <div class="form-row">
               <div class="form-group half">
                 <label for="department">Department</label>
-                <select id="department" v-model="form.studentInfo.department" class="glass-input glass-select" :required="form.role === 'student'">
+                <select id="department" v-model="form.studentInfo.department" class="glass-input glass-select" required>
                   <option value="" disabled>Select Dept</option>
                   <option value="Computer Science">Computer Science</option>
                   <option value="Cyber Security">Cyber Security</option>
@@ -83,7 +83,7 @@
                 <label for="matric">Matric Number</label>
                 <div class="input-wrapper">
                   <i class="bi bi-card-text"></i>
-                  <input id="matric" v-model="form.studentInfo.matricNumber" type="text" placeholder="RUN/CSC/..." class="glass-input" :required="form.role === 'student'" />
+                  <input id="matric" v-model="form.studentInfo.matricNumber" type="text" placeholder="RUN/CSC/..." class="glass-input" required />
                 </div>
               </div>
             </div>
@@ -93,7 +93,7 @@
                 <label for="gradYear">Graduation Year</label>
                 <div class="input-wrapper">
                   <i class="bi bi-calendar"></i>
-                  <input id="gradYear" v-model="form.alumniInfo.graduationYear" type="text" placeholder="e.g. 2023" class="glass-input" />
+                  <input id="gradYear" v-model="form.alumniInfo.graduationYear" type="text" placeholder="e.g. 2023" class="glass-input" maxlength="4" />
                 </div>
               </div>
 
@@ -161,40 +161,46 @@ const handleSubmit = async () => {
         password: form.password
       })
       alert('Login successful!')
-      // Redirect to dashboard
       // navigateTo('/dashboard')
       
     } else {
       // --- SIGNUP FLOW ---
-      // 1. Build the base payload WITH the password
+      
+      // 1. Build the base payload with Student Info included for EVERYONE
       const payload = {
         username: form.username,
         email: form.email,
         password: form.password,
         role: form.role,
-      }
-
-      if (form.role === 'student') {
-         payload.studentInfo = {
+        studentInfo: {
             department: form.studentInfo.department,
             matricNumber: form.studentInfo.matricNumber
+        }
+      }
+
+      // 2. If they are an Alumni, append the extra alumni data
+      if (form.role === 'alumni') {
+         // Auto-format the year to October 1st, 12:00 AM (UTC)
+         let formattedGradYear = form.alumniInfo.graduationYear
+         if (formattedGradYear && formattedGradYear.length === 4) {
+           formattedGradYear = `${formattedGradYear}-10-01T00:00:00Z`
          }
-      } else if (form.role === 'alumni') {
+
          payload.alumniInfo = {
-            graduationYear: form.alumniInfo.graduationYear,
+            graduationYear: formattedGradYear, 
             jobTitle: form.alumniInfo.jobTitle,
             currentCompany: form.alumniInfo.currentCompany,
             isStar: form.alumniInfo.isStar
          }
       }
       
-      // 3. Send it!
+      // 3. Fire the signup action
       await authStore.signup(payload)
       alert('Account created successfully! Please log in.')
       
       // Automatically switch to the login tab after successful signup
       isLogin.value = true
-      form.password = '' // Clear the password field for safety
+      form.password = '' 
     }
   } catch (err) {
     console.error('Auth error:', err)

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useRunacosApi } from '~/composables/useRunacosApi'
+import { useCookie } from '#app'
 
 // TypeScript interfaces matching the OpenAPI schema
 export interface StudentInfo {
@@ -31,18 +32,22 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const authError = ref<string | null>(null)
 
+  const authToken = useCookie('auth_token', {
+    maxAge: 60 * 60 * 24 * 5  //keeps the user logged in for 7 days
+  })
+
   // Registration Action
   const signup = async (userData: UserSignupPayload) => {
     isLoading.value = true
     authError.value = null
     
     try {
-      const response = await apiFetch('/user', {
+      // Updated to use the new /signup route per the OpenAPI spec
+      const response = await apiFetch('/signup', {
         method: 'POST',
         body: userData
       })
       
-      // The API returns an array of the created user schema on 201 Created
       currentUser.value = response
       return response
     } catch (error: any) {
@@ -53,40 +58,39 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Placeholder for Login
-// --- CUSTOM LOGIN ACTION ---
+  // Proper Login Action
   const login = async (credentials: { email: string; password?: string }) => {
     isLoading.value = true
     authError.value = null
     
     try {
-      // 1. Fetch the entire list of users from the API
-      const users = await apiFetch<any[]>('/user')
+      // Updated to use the dedicated /login route
+      const response = await apiFetch('/login', {
+        method: 'POST',
+        body: {
+          email: credentials.email,
+          password: credentials.password
+        }
+      })
       
-      // 2. Search the array for a user with a matching email
-      const matchedUser = users.find((u) => u.email === credentials.email)
+      // Success! Assuming the API returns the user object or a token
+      currentUser.value = response
+
+      authToken.value = response.id
       
-      if (matchedUser) {
-        // Success! We found the user.
-        // Note: Since the API doesn't store passwords, we are bypassing the password check here.
-        currentUser.value = matchedUser
-        
-        // Optional: Save the user's email or ID to a cookie so they stay logged in on refresh
-        // const authCookie = useCookie('auth_user')
-        // authCookie.value = matchedUser.email
-        
-        return matchedUser
-      } else {
-        // If `.find()` returns undefined, the email isn't in the database
-        throw new Error('No account found with this email address.')
-      }
-      
+      return response
     } catch (error: any) {
-      authError.value = error.message || 'Login failed. Please try again.'
+      authError.value = error.message || 'Login failed. Please check your credentials.'
       throw error
     } finally {
       isLoading.value = false
     }
+  }
+
+  const logout = () => {
+    authToken.value = null
+    currentUser.value = null
+    // navigateTo('/auth') // Redirect to login page
   }
 
   return { currentUser, isLoading, authError, signup, login }
