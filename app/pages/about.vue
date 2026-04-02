@@ -163,17 +163,17 @@ const visionMission = [
   {
     title: "Vision",
     icon: "bi bi-eye-fill",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque varius.",
+    text: "To be the premier student-led computing association, nurturing world-class tech innovators and leaders who will shape the future of the digital landscape.",
   },
   {
     title: "Mission",
     icon: "bi bi-bullseye",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque varius.",
+    text: "To empower our students with practical tech skills, career-building opportunities, and a collaborative network, bridging the gap between classroom theory and industry demands.",
   },
   {
     title: "Core Values",
     icon: "bi bi-gem",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque varius.",
+    text: "We are driven by Innovation, Integrity, Collaboration, Excellence, and a commitment to Continuous Learning in the ever-evolving tech industry.",
   },
 ];
 
