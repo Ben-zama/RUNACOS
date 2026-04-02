@@ -1,6 +1,6 @@
 <template>
   <div id="event-details-page">
-    <div class="container-wrapper" v-if="event">
+    <div class="container-wrapper" v-if="event && !isLoading">
       
       <NuxtLink to="/news-events" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Events
@@ -8,14 +8,14 @@
       
       <div class="event-info glass-panel">
         <div class="image-wrapper">
-          <img :src="event.image" :alt="event.title" />
+          <img :src="event.fileUrl || 'https://placehold.co/1000x400/151515/8a8a93?text=Event+Banner'" :alt="event.title" />
           <div class="overlay"></div>
         </div>
         
         <div class="info-content">
           <div class="meta-tags">
-            <span class="pill"><i class="bi bi-calendar3"></i> {{ event.date }}</span>
-            <span class="pill"><i class="bi bi-geo-alt-fill"></i> {{ event.location }}</span>
+            <span class="pill"><i class="bi bi-calendar3"></i> {{ formatDate(event.eventTime) }}</span>
+            <span class="pill"><i class="bi bi-geo-alt-fill"></i> {{ event.eventType || 'Campus' }}</span>
           </div>
           
           <h1>{{ event.title }}</h1>
@@ -31,7 +31,15 @@
 
     </div>
     
-    <div v-else class="loading-state">
+    <div v-else-if="error" class="status-state">
+      <i class="bi bi-exclamation-triangle"></i>
+      <h2>{{ error }}</h2>
+      <NuxtLink to="/news-events" class="back-link mt-4">
+        <i class="bi bi-arrow-left"></i> Return to Events
+      </NuxtLink>
+    </div>
+
+    <div v-else class="status-state">
       <i class="bi bi-arrow-repeat spin"></i>
       <h2>Loading event details...</h2>
     </div>
@@ -41,9 +49,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router'; 
+import { useRunacosApi } from '~/composables/useRunacosApi';
 
 const route = useRoute();
 const eventId = route.params.id;
+const { apiFetch } = useRunacosApi();
 
 definePageMeta({
   layout: {
@@ -55,26 +65,57 @@ definePageMeta({
 
 const dynamicPageTitle = useState('pageTitle', () => 'Loading...');
 const event = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
+
+// --- Formatter ---
+const formatDate = (dateStr) => {
+  if (!dateStr) return "TBA";
+  try {
+    return new Date(dateStr).toLocaleString('en-US', { 
+      weekday: 'long', 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 // --- Form Handler ---
 const handleRegistration = () => {
-  // You can trigger a modal here, or route the user to a signup page!
+  if (!event.value) return;
   alert(`Registration initiated for: ${event.value.title}`);
 }
 
-// --- Mock Data Fetching ---
-const fetchEventDetails = () => {
-  const mockDatabase = [
-    { id: "tech-summit-2026", image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000&auto=format&fit=crop", title: "Global Tech Summit 2026", date: "March 25, 2026", location: "Main Auditorium, Ede", description: "Join industry leaders and innovators for a full day of keynotes, networking, and deep dives into the future of AI and web development. This summit brings together the brightest minds in the industry." },
-    { id: "design-masterclass", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop", title: "UI/UX Design Masterclass", date: "April 10, 2026", location: "Virtual Event", description: "Learn the secrets behind modern glassmorphism, advanced animations, and creating intuitive user experiences in this hands-on workshop." },
-    { id: "founder-mixer", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop", title: "Startup Founders Mixer", date: "May 5, 2026", location: "Innovation Hub, Lagos", description: "An exclusive evening for startup founders to connect, share ideas, and meet with potential angel investors over drinks and light music." },
-    { id: "ai-workshop", image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000&auto=format&fit=crop", title: "AI Integration Workshop", date: "June 12, 2026", location: "Tech Park", description: "Practical session on adding AI to your products." },
-    { id: "web3-conference", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop", title: "Web3 Developer Conference", date: "July 20, 2026", location: "Virtual Event", description: "Exploring smart contracts and decentralized apps." },
-  ];
-
-  event.value = mockDatabase.find(e => e.id === eventId) || mockDatabase[0]; 
-
-  route.meta.pageTitle = event.value.title;
+// --- API Data Fetching ---
+const fetchEventDetails = async () => {
+  isLoading.value = true;
+  error.value = null;
+  
+  try {
+    const data = await apiFetch(`/events/${eventId}`);
+    
+    // Safely assign event (handling cases where backend wraps in an array)
+    event.value = Array.isArray(data) ? data[0] : data;
+    
+    if (event.value) {
+      route.meta.pageTitle = event.value.title;
+      dynamicPageTitle.value = event.value.title;
+    } else {
+      error.value = "Event not found.";
+      dynamicPageTitle.value = "Not Found";
+    }
+  } catch (err) {
+    console.error("Failed to load event:", err);
+    error.value = "Failed to load event details. Please try again later.";
+    dynamicPageTitle.value = "Error";
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(() => {
@@ -169,7 +210,6 @@ onUnmounted(() => {
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
-        margin-top: -65px; 
         z-index: 2;
         position: relative;
 
@@ -187,7 +227,7 @@ onUnmounted(() => {
           font-weight: 600;
           color: #fff;
 
-          i { color: $accent-color; } /* You can swap this with your $accent-color variable */
+          i { color: $accent-color; } 
         }
       }
 
@@ -205,6 +245,7 @@ onUnmounted(() => {
         line-height: 1.8;
         color: rgba(255, 255, 255, 0.85);
         margin: 0;
+        white-space: pre-wrap; /* Ensures formatting from the backend text area stays intact */
       }
 
       /* Registration CTA Button */
@@ -216,7 +257,7 @@ onUnmounted(() => {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          background: $accent-color; /* Use your $accent-color here */
+          background: $accent-color; 
           color: #fff;
           border: none;
           padding: 16px 32px;
@@ -245,18 +286,20 @@ onUnmounted(() => {
     }
   }
 
-  .loading-state {
+  .status-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
     margin-top: 100px;
     color: #8a8a93;
+    text-align: center;
 
     i { font-size: 2.5rem; }
-    h2 { font-size: 1.2rem; font-weight: 500; }
+    h2 { font-size: 1.2rem; font-weight: 500; margin: 0; }
     
     .spin { animation: spin 1s linear infinite; }
+    .mt-4 { margin-top: 1.5rem; }
   }
 
   @keyframes spin {

@@ -127,7 +127,7 @@
 import { onMounted, ref } from "vue";
 import { useFaultsStore } from "~/stores/useFaultsStore";
 
-definePageMeta({ layout: "admin" });
+definePageMeta({ layout: "admin", middleware: "admin" });
 
 const faultsStore = useFaultsStore();
 

@@ -1,9 +1,8 @@
 <template>
   <div id="article-reader-page">
     
-    <template v-if="article">
+    <template v-if="article && !isLoading">
       
-
       <header class="article-header">
         <ClientOnly>
           <ColorBends
@@ -19,12 +18,10 @@
             :noise="0.5"
           />
         </ClientOnly>
-    
 
         <div class="content">
           <div class="tags">
-            <span v-for="tag in article.tags" :key="tag" class="pill">{{ tag }}</span>
-            <span class="pill type-pill">{{ article.type.toUpperCase() }}</span>
+            <span class="pill type-pill">ARTICLE</span>
           </div>
 
           <h1>{{ article.title }}</h1>
@@ -34,73 +31,55 @@
               <div class="avatar">
                 <i class="bi bi-person-fill"></i>
               </div>
-              <span>{{ article.author }}</span>
+              <span>{{ article.authorName }}</span>
             </div>
             <span class="divider">•</span>
-            <span class="date">{{ article.date }}</span>
+            <span class="date">{{ formatDate(article.createdAt) }}</span>
           </div>
         </div>
       </header>
 
-            <NuxtLink to="/news-events" class="back-link">
+      <NuxtLink to="/news-events" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to News & Blogs
       </NuxtLink>
 
       <div class="article-container">
         <div class="hero-image">
-          <img :src="article.image" :alt="article.title" />
+          <img :src="article.fileUrl || 'https://placehold.co/1000x400/151515/8a8a93?text=Post+Banner'" :alt="article.title" />
         </div>
 
         <article class="glass-panel article-body">
-          <p class="lead">{{ article.description }}</p>
-
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
-          </p>
-
-          <h3>The Impact on the Industry</h3>
-          <p>
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-            dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est
-            laborum.
-          </p>
-
-          <blockquote>
-            "This represents a massive shift in how we approach problem-solving in
-            this sector. The results speak for themselves."
-            <cite>- {{ article.author }}</cite>
-          </blockquote>
-
-          <p>
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-            accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae
-            ab illo inventore veritatis et quasi architecto beatae vitae dicta
-            sunt explicabo.
-          </p>
+          <div class="markdown-content" v-html="renderedContent"></div>
         </article>
       </div>
 
     </template>
 
+    <div v-else-if="error" class="loading-state">
+      <i class="bi bi-exclamation-triangle"></i>
+      <h2>{{ error }}</h2>
+      <NuxtLink to="/news-events" class="back-link" style="margin-top: 20px;">
+        <i class="bi bi-arrow-left"></i> Return to News & Blogs
+      </NuxtLink>
+    </div>
+
     <div v-else class="loading-state">
-      <i class="bi bi-file-earmark-x"></i>
+      <i class="bi bi-arrow-repeat spin"></i>
       <h2>Loading article...</h2>
     </div>
 
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
+import { marked } from "marked";
+import { useRunacosApi } from '~/composables/useRunacosApi';
 
 const route = useRoute();
 const articleId = route.params.id;
+const { apiFetch } = useRunacosApi();
 
 definePageMeta({
   layout: {
@@ -111,91 +90,60 @@ definePageMeta({
 });
 
 const article = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
 
-// --- Mock Data Fetching ---
-const fetchArticleDetails = () => {
-  // We combine both arrays here just like a backend query would search both tables
-  const allArticles = [
-    {
-      id: "scaling-financial",
-      type: "blog",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80",
-      tags: ["AI", "Growth"],
-      title: "Scaling Financial Services",
-      description:
-        "Coframe Drives over 26% Lift in conversion rates using new predictive models.",
-      author: "Mark Henry",
-      date: "March 13, 2026",
-    },
-    {
-      id: "vue3-components",
-      type: "blog",
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80",
-      tags: ["Vue3"],
-      title: "Reusable component system",
-      description:
-        "A deep dive into Nuxt 3 architectures and how to build scalable UI libraries.",
-      author: "Mark Henry",
-      date: "March 13, 2026",
-    },
-    {
-      id: "api-design",
-      type: "blog",
-      image:
-        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80",
-      tags: ["Engineering"],
-      title: "REST vs GraphQL in 2026",
-      description:
-        "Choosing the right API paradigm for your next major tech stack.",
-      author: "Jane Doe",
-      date: "March 15, 2026",
-    },
-    {
-      id: "js-framework",
-      type: "news",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80",
-      tags: ["Technology"],
-      title: "New JavaScript Framework",
-      description:
-        "Claims unprecedented load speeds and a completely novel approach to state.",
-      author: "Sarah Jenkins",
-      date: "March 18, 2026",
-    },
-    {
-      id: "glassmorphism",
-      type: "news",
-      image: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80",
-      tags: ["Design"],
-      title: "Evolution of Glassmorphism",
-      description:
-        "How top brands are using translucent layers to create depth in 2026.",
-      author: "Marcus Chen",
-      date: "March 15, 2026",
-    },
-    {
-      id: "startup-funding",
-      type: "news",
-      image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80",
-      tags: ["Business"],
-      title: "EdTech Startup Secures $5M",
-      description:
-        "Expansion plans for interactive tools aimed at university students globally.",
-      author: "Amina Yusuf",
-      date: "March 10, 2026",
-    },
-  ];
-
-  article.value = allArticles.find((a) => a.id === articleId);
+// --- Formatter ---
+const formatDate = (dateStr) => {
+  if (!dateStr) return "TBA";
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  } catch {
+    return dateStr;
+  }
 };
+
+// --- API Data Fetching ---
+const fetchArticleDetails = async () => {
+  isLoading.value = true;
+  error.value = null;
+  
+  try {
+    const data = await apiFetch(`/posts/${articleId}`);
+    
+    // Safely assign post (handling cases where backend wraps in an array)
+    article.value = Array.isArray(data) ? data[0] : data;
+    
+    if (!article.value) {
+      error.value = "Article not found.";
+    }
+  } catch (err) {
+    console.error("Failed to load article:", err);
+    error.value = "Failed to load the article. Please try again later.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// --- Markdown Rendering ---
+const renderedContent = computed(() => {
+  if (!article.value?.content) return '';
+  // Parse the markdown string into HTML
+  return marked.parse(article.value.content);
+});
 
 onMounted(() => {
   fetchArticleDetails();
 });
 </script>
+
 <style lang="scss" scoped>
 #article-reader-page {
-    padding: 50px 15px;
+  padding: 50px 15px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -219,7 +167,7 @@ onMounted(() => {
     transition: color 0.3s ease;
     width: max-content;
     margin-bottom: 30px;
-    z-index: 10; // Ensure it stays clickable above backgrounds
+    z-index: 10; 
 
     i {
       transition: transform 0.3s ease;
@@ -246,7 +194,6 @@ onMounted(() => {
     z-index: 1;
     margin-bottom: 300px;
 
-    // The actual text content
     .content {
       position: absolute;
       z-index: 3;
@@ -259,8 +206,8 @@ onMounted(() => {
       padding: 40px;
       width: 100%;
       height: 100%;
-       background: $translucent-background-color; // Darkens the bright colors slightly
-      backdrop-filter: blur(10px); // Blurs the ColorBends effect
+      background: $translucent-background-color; 
+      backdrop-filter: blur(10px); 
       -webkit-backdrop-filter: blur(10px);
 
       .tags {
@@ -290,7 +237,7 @@ onMounted(() => {
         line-height: 1.2;
         margin: 0;
         color: #fff;
-        text-shadow: 0 4px 15px rgba(0,0,0,0.5); // Helps text pop off the background
+        text-shadow: 0 4px 15px rgba(0,0,0,0.5); 
       }
 
       .article-meta {
@@ -351,46 +298,84 @@ onMounted(() => {
 
   .article-body {
     padding: 40px;
+  }
+
+  /* --- Markdown Content Styling --- */
+  /* Using :deep() to target the injected HTML from Marked.js */
+  :deep(.markdown-content) {
     color: rgba(255, 255, 255, 0.85);
     font-size: 1.1rem;
     line-height: 1.8;
-
-    .lead {
-      font-size: 1.3rem;
-      font-weight: 500;
-      color: #fff;
-      margin-top: 0;
-      margin-bottom: 30px;
-    }
 
     p {
       margin-bottom: 25px;
     }
 
-    h3 {
-      font-size: 1.5rem;
+    h1, h2, h3, h4, h5, h6 {
       color: #fff;
       margin: 40px 0 20px 0;
+      line-height: 1.3;
     }
+
+    h2 { font-size: 1.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    h3 { font-size: 1.5rem; }
 
     blockquote {
       margin: 40px 0;
-      padding: 30px;
+      padding: 20px 30px;
       background: rgba($accent-color, 0.05);
       border-left: 4px solid $accent-color;
       border-radius: 0 12px 12px 0;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-style: italic;
       color: #fff;
 
-      cite {
-        display: block;
-        margin-top: 15px;
-        font-size: 0.95rem;
-        font-style: normal;
-        color: $accent-color;
-        font-weight: 600;
-      }
+      p:last-child { margin-bottom: 0; }
+    }
+
+    a {
+      color: $accent-color;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: 0.3s;
+      &:hover { border-bottom-color: $accent-color; }
+    }
+
+    ul, ol {
+      margin-bottom: 25px;
+      padding-left: 20px;
+      li { margin-bottom: 10px; }
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9em;
+      color: #f8a5c2;
+    }
+
+    pre {
+      background: #111;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin-bottom: 25px;
+      border: 1px solid rgba(255,255,255,0.05);
+      code { background: transparent; padding: 0; color: #fff; }
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    
+    hr {
+      border: 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin: 40px 0;
     }
   }
 
@@ -402,14 +387,12 @@ onMounted(() => {
     margin-top: 100px;
     color: #8a8a93;
 
-    i {
-      font-size: 3rem;
-    }
-    h2 {
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
+    i { font-size: 3rem; }
+    h2 { font-size: 1.2rem; font-weight: 500; }
+    .spin { animation: spin 1s linear infinite; }
   }
+
+  @keyframes spin { 100% { transform: rotate(360deg); } }
 
   /* --- Media Queries --- */
   @include respond-to(600px, 1023px) {
@@ -424,7 +407,7 @@ onMounted(() => {
     padding: 100px 50px;
 
     .article-header {
-      min-height: 500px; // Larger header on desktop
+      min-height: 500px; 
       
       .content h1 {
         font-size: 3.5rem;

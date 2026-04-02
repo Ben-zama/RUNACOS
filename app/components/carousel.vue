@@ -105,7 +105,7 @@ defineEmits(["cardClick"]);
   background: linear-gradient(
     to bottom,
     transparent 40%,
-    $translucent-secondary-color 100%
+    rgba($alternate-color, 0.5) 100%
   );
   display: flex;
   flex-direction: column;
@@ -135,7 +135,7 @@ defineEmits(["cardClick"]);
 
 .card-info p {
   opacity: 0.8;
-  margin-bottom: 15px;
+  margin-bottom: 0;
   color: $secondary-color;
 }
 

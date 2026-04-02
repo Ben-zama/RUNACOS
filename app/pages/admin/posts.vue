@@ -31,25 +31,35 @@
           <thead>
             <tr>
               <th>Headline</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Date</th>
+              <th class="desktop-only">Author</th>
+              <th class="desktop-only">Date Posted</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="post in postsStore.posts" :key="post.id || post._id">
-              <td class="title-cell highlight">{{ post.title }}</td>
-              <td>{{ post.category }}</td>
-              <td>
-                <span class="status-badge" :class="(post.status || 'draft').toLowerCase()">
-                  {{ post.status || 'Draft' }}
-                </span>
+              <td data-label="Headline" class="title-cell highlight">
+                <div class="cell-content">
+                  <span class="headline-text">{{ post.title }}</span>
+                  <div class="mobile-only text-xs text-gray-400 mt-1">
+                    {{ formatDate(post.createdAt) }} • By {{ post.authorName }}
+                  </div>
+                </div>
               </td>
-              <td>{{ formatDate(post.date) }}</td>
-              <td class="actions-cell">
-                <button class="action-btn" @click="openModal(post)"><i class="bi bi-pencil"></i></button>
-                <button class="action-btn danger" @click="handleDelete(post.id || post._id)"><i class="bi bi-trash"></i></button>
+              <td data-label="Author" class="desktop-only">{{ post.authorName }}</td>
+              <td data-label="Date Posted" class="desktop-only">{{ formatDate(post.createdAt) }}</td>
+              <td data-label="Actions" class="actions-cell">
+                <div class="action-buttons">
+                  <a v-if="post.fileUrl" :href="post.fileUrl" target="_blank" class="action-btn" title="View Media">
+                    <i class="bi bi-image"></i>
+                  </a>
+                  <button class="action-btn" @click="openModal(post)" title="Edit Post">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="action-btn danger" @click="handleDelete(post.id || post._id)" title="Delete Post">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -63,27 +73,28 @@
         
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label>Headline / Title</label>
-            <input v-model="form.title" type="text" class="glass-input" required placeholder="e.g., New JavaScript Framework..." />
+            <label>Headline / Title *</label>
+            <input v-model="form.title" type="text" class="glass-input" required placeholder="e.g., Upcoming Tech Symposium" />
+          </div>
+
+          <div class="form-group">
+            <label>Post Banner Image <span v-if="!isEditing">*</span></label>
+            <input type="file" @change="handleFileUpload" accept="image/*" class="glass-input" :required="!isEditing" />
           </div>
 
           <div class="form-row">
             <div class="form-group half">
-              <label>Category</label>
-              <input v-model="form.category" type="text" class="glass-input" required placeholder="e.g., Technology, Design" />
+              <label>Author Name *</label>
+              <input v-model="form.authorName" type="text" class="glass-input" required placeholder="e.g., John Doe" />
             </div>
             <div class="form-group half">
-              <label>Status</label>
-              <select v-model="form.status" class="glass-input" required>
-                <option value="Draft">Draft</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="Published">Published</option>
-              </select>
+              <label>Author ID *</label>
+              <input v-model="form.authorId" type="text" class="glass-input" required placeholder="e.g., admin-01" />
             </div>
           </div>
 
           <div class="form-group">
-            <label>Content</label>
+            <label>Content *</label>
             <textarea v-model="form.content" class="glass-input" rows="6" required placeholder="Write your post content here..."></textarea>
           </div>
 
@@ -103,7 +114,7 @@
 import { onMounted, ref, reactive } from 'vue';
 import { usePostsStore } from '~/stores/usePostsStore';
 
-definePageMeta({ layout: 'admin' });
+definePageMeta({ layout: 'admin', middleware: 'admin' });
 
 const postsStore = usePostsStore();
 
@@ -111,7 +122,6 @@ onMounted(() => {
   postsStore.fetchPosts();
 });
 
-// Helper to safely format dates
 const formatDate = (dateStr) => {
   if (!dateStr) return "—";
   try {
@@ -121,22 +131,40 @@ const formatDate = (dateStr) => {
   }
 };
 
-// --- Modal & Form Logic ---
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
 
 const form = reactive({
   title: '',
-  category: '',
-  status: 'Draft',
-  content: ''
+  content: '',
+  authorName: 'Admin', 
+  authorId: 'admin-01', 
+  imageFile: null
 });
 
 const resetForm = () => {
-  Object.assign(form, { title: '', category: '', status: 'Draft', content: '' });
+  Object.assign(form, { 
+    title: '', 
+    content: '',
+    authorName: 'Admin',
+    authorId: 'admin-01',
+    imageFile: null 
+  });
   isEditing.value = false;
   editingId.value = null;
+
+  if (typeof document !== 'undefined') {
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = "";
+  }
+};
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    form.imageFile = file;
+  }
 };
 
 const openModal = (post = null) => {
@@ -144,10 +172,11 @@ const openModal = (post = null) => {
     isEditing.value = true;
     editingId.value = post.id || post._id;
     Object.assign(form, {
-      title: post.title,
-      category: post.category,
-      status: post.status || 'Draft',
-      content: post.content || ''
+      title: post.title || '',
+      content: post.content || '',
+      authorName: post.authorName || 'Admin',
+      authorId: post.authorId || 'admin-01',
+      imageFile: null
     });
   } else {
     resetForm();
@@ -161,22 +190,38 @@ const closeModal = () => {
 };
 
 const handleSubmit = async () => {
-  try {
-    const payload = {
-      title: form.title,
-      category: form.category,
-      status: form.status,
-      content: form.content,
-      date: new Date().toISOString() // Auto-attach current date on save
-    };
+  if (!form.imageFile && !isEditing.value) {
+    alert("Please select a banner image for the new post.");
+    return;
+  }
 
+  try {
     if (isEditing.value) {
-      await postsStore.updatePost(editingId.value, payload);
+      const jsonPayload = {
+        title: form.title,
+        content: form.content,
+        authorName: form.authorName,
+        authorId: form.authorId
+      };
+      
+      await postsStore.updatePost(editingId.value, jsonPayload);
     } else {
-      await postsStore.createPost(payload);
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("content", form.content);
+      formData.append("authorName", form.authorName);
+      formData.append("authorId", form.authorId);
+      formData.append("createdAt", new Date().toISOString());
+      
+      if (form.imageFile) {
+        formData.append("file", form.imageFile);
+      }
+
+      await postsStore.createPost(formData);
     }
     closeModal();
   } catch (err) {
+    console.error(err);
     alert(`Failed to ${isEditing.value ? 'update' : 'create'} post. Check console for details.`);
   }
 };
@@ -192,6 +237,9 @@ const handleDelete = async (id) => {
 </script>
 
 <style lang="scss" scoped>
+/* Box Sizing Reset to ensure padding doesn't overflow widths */
+*, *::before, *::after { box-sizing: border-box; }
+
 .page-container { display: flex; flex-direction: column; gap: 30px; color: #fff; }
 .page-header {
   display: flex; justify-content: space-between; align-items: flex-end;
@@ -216,22 +264,20 @@ const handleDelete = async (id) => {
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #8a8a93; font-weight: 500; font-size: 0.9rem; }
 td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.95rem; vertical-align: middle; }
-.title-cell { max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.title-cell { font-weight: 500; }
+.mobile-only { display: none; }
+.text-xs { font-size: 0.75rem; }
+.text-gray-400 { color: #9ca3af; }
+.mt-1 { margin-top: 0.25rem; }
 
-.status-badge {
-  padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize;
-  &.published { background: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.2); }
-  &.draft { background: rgba(255, 255, 255, 0.05); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.1); }
-  &.scheduled { background: rgba(255, 165, 2, 0.1); color: #ffa502; border: 1px solid rgba(255, 165, 2, 0.2); }
-}
+/* Desktop Wrappers */
+.cell-content { display: flex; flex-direction: column; gap: 2px; }
+.action-buttons { display: flex; gap: 8px; align-items: center; }
 
-.actions-cell {
-  display: flex; gap: 8px;
-  .action-btn { 
-    background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; transition: 0.2s; color: #3498db;
-    &:hover { background: rgba(52, 152, 219, 0.1); }
-    &.danger { color: #ff4757; &:hover { background: rgba(255, 71, 87, 0.1); } }
-  }
+.action-btn { 
+  background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; transition: 0.2s; color: #3498db;
+  &:hover { background: rgba(52, 152, 219, 0.1); }
+  &.danger { color: #ff4757; &:hover { background: rgba(255, 71, 87, 0.1); } }
 }
 
 /* Modal Styles */
@@ -241,7 +287,7 @@ td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-siz
 .form-row { display: flex; gap: 15px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; width: 100%; &.half { flex: 1; } }
 .form-group label { font-size: 0.85rem; color: #aaa; }
-.glass-input { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 12px; border-radius: 8px; outline: none; font-family: inherit; &:focus { border-color: #3498db; } option { background: #1a1a1a; color: #fff; } }
+.glass-input { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 12px; border-radius: 8px; outline: none; font-family: inherit; &:focus { border-color: #3498db; } }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
 .modal-actions button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; transition: 0.2s; }
 .btn-cancel { background: transparent; color: #aaa; &:hover { color: #fff; background: rgba(255, 255, 255, 0.05); } }
@@ -249,5 +295,72 @@ td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-siz
 
 .empty-state, .loading-state { text-align: center; padding: 50px; color: #8a8a93; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px; i { font-size: 3rem; margin-bottom: 10px; opacity: 0.5; } }
 @keyframes spin { 100% { transform: rotate(360deg); } }
-@media (max-width: 600px) { .page-header { flex-direction: column; align-items: flex-start; gap: 15px; } .form-row { flex-direction: column; } }
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) { 
+  .desktop-only { display: none !important; } 
+  .mobile-only { display: block; }
+  
+  .form-row { flex-direction: column; gap: 15px; }
+  .glass-modal { width: 95%; padding: 20px; margin: 10px auto; }
+  
+  .page-header { flex-direction: column; align-items: stretch; gap: 15px; text-align: center; }
+  .header-actions { justify-content: center; flex-wrap: wrap; }
+  
+  table, thead, tbody, th, td, tr { display: block; width: 100%; }
+  thead tr { position: absolute; top: -9999px; left: -9999px; }
+  
+  tr { 
+    margin-bottom: 15px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 12px; 
+    background: rgba(0, 0, 0, 0.15); 
+    padding: 10px; 
+  }
+  
+  td { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; /* Ensure top-alignment for multi-line text */
+    text-align: right; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+    padding: 12px 5px; 
+    font-size: 0.9rem;
+    gap: 15px; /* Critical: Adds space between the label and content */
+  }
+  td:last-child { border-bottom: none; }
+  
+  td::before { 
+    content: attr(data-label); 
+    font-weight: 600; 
+    color: #8a8a93; 
+    text-transform: uppercase; 
+    font-size: 0.75rem; 
+    text-align: left; 
+    flex-shrink: 0; /* Keeps the label from squishing */
+    margin-top: 2px;
+  }
+  
+  .cell-content { 
+    flex: 1; /* Take up all available space after the label */
+    min-width: 0; /* Magic flexbox fix for overflowing text */
+    align-items: flex-end; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .headline-text {
+    white-space: normal; /* Allow long titles to stack */
+  }
+
+  .action-buttons { 
+    flex-wrap: wrap; 
+    justify-content: flex-end; 
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header .titles h2 { font-size: 1.5rem; }
+  .glass-btn { padding: 8px 15px; font-size: 0.9rem; }
+}
 </style>

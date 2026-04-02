@@ -1,57 +1,63 @@
 <template>
   <div id="news-eventPage">
-    <section class="news">
-      <h3>Latest News & Updates</h3>
-      <div class="container">
-        <NewsCard
-          v-for="article in news"
-          :key="article.id"
-          :to="`/posts/${article.id}`"
-          :image="article.image"
-          :category="article.tags[0]"
-          :date="article.date"
-          :title="article.title"
-          :excerpt="article.description"
-        />
-      </div>
-    </section>
-
+    
     <section class="events">
-      <h3>Upcoming events</h3>
-      <div class="container">
+      <h3>Upcoming Events</h3>
+      
+      <div v-if="eventsStore.isLoading" class="status-state">
+        <div class="spinner"></div><p>Loading events...</p>
+      </div>
+      <div v-else-if="eventsStore.events.length === 0" class="status-state empty">
+        <p>No upcoming events at the moment.</p>
+      </div>
+      
+      <div v-else class="container">
         <EventCard
-          v-for="event in events"
-          :key="event.id"
-          :to="`/events/${event.id}`"
-          :image="event.image"
+          v-for="event in eventsStore.events"
+          :key="event.id || event._id"
+          :to="`/events/${event.id || event._id}`"
+          :image="event.fileUrl || 'https://placehold.co/600x400/151515/8a8a93?text=Event'"
           :title="event.title"
-          :date="event.date"
-          :location="event.location"
+          :date="formatDate(event.eventTime)"
+          :location="event.eventType || 'Campus'"
           :description="event.description"
         />
       </div>
     </section>
 
-    <section class="blogs">
-      <h3>Latest Blogs</h3>
-      <div class="container">
+    <section class="posts">
+      <h3>Latest News & Blogs</h3>
+      
+      <div v-if="postsStore.isLoading" class="status-state">
+        <div class="spinner"></div><p>Loading posts...</p>
+      </div>
+      <div v-else-if="postsStore.posts.length === 0" class="status-state empty">
+        <p>No news or blog posts found.</p>
+      </div>
+
+      <div v-else class="container">
         <BlogCard
-          v-for="post in posts"
-          :key="post.id"
-          :to="`/posts/${post.id}`"
-          :imageSrc="post.image"
-          :tags="post.tags"
+          v-for="post in postsStore.posts"
+          :key="post.id || post._id"
+          :to="`/posts/${post.id || post._id}`"
+          :imageSrc="post.fileUrl || 'https://placehold.co/600x400/151515/8a8a93?text=Update'"
+          :tags="['Faculty Update']"
           :title="post.title"
-          :description="post.description"
-          :author="post.author"
-          :date="post.date"
+          :description="post.content"
+          :author="post.authorName"
+          :date="formatDate(post.createdAt)"
         />
       </div>
     </section>
+
   </div>
 </template>
 
 <script setup>
+import { onMounted } from "vue";
+import { useEventsStore } from "~/stores/useEventsStore";
+import { usePostsStore } from "~/stores/usePostsStore";
+
 definePageMeta({
   layout: {
     props: {
@@ -61,112 +67,31 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Latest news & events',
+  title: 'Latest News & Events',
 })
 
-// --- Mock Data (IDs updated to slugs for dynamic routing) ---
-const events = [
-  {
-    id: "tech-summit-2026",
-    image:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000&auto=format&fit=crop",
-    title: "Global Tech Summit 2026",
-    date: "March 25, 2026",
-    location: "Main Auditorium, Ede",
-    description:
-      "Join industry leaders and innovators for a full day of keynotes...",
-  },
-  {
-    id: "design-masterclass",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop",
-    title: "UI/UX Design Masterclass",
-    date: "April 10, 2026",
-    location: "Virtual Event",
-    description: "Learn the secrets behind modern glassmorphism...",
-  },
-  {
-    id: "founder-mixer",
-    image:
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop",
-    title: "Startup Founders Mixer",
-    date: "May 5, 2026",
-    location: "Innovation Hub, Lagos",
-    description: "An exclusive evening for startup founders to connect...",
-  },
-];
+const eventsStore = useEventsStore();
+const postsStore = usePostsStore();
 
-const posts = [
-  {
-    id: "scaling-financial",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80",
-    tags: ["AI", "Growth"],
-    title: "Scaling Financial Services",
-    description:
-      "Coframe Drives over 26% Lift in conversion rates using new predictive models.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: "vue3-components",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80",
-    tags: ["Vue3"],
-    title: "Reusable component system",
-    description:
-      "A deep dive into Nuxt 3 architectures and how to build scalable UI libraries.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: "api-design",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80",
-    tags: ["Engineering"],
-    title: "REST vs GraphQL in 2026",
-    description:
-      "Choosing the right API paradigm for your next major tech stack.",
-    author: "Jane Doe",
-    date: "March 15, 2026",
-  },
-];
+// Fetch live data on mount
+onMounted(() => {
+  eventsStore.fetchEvents();
+  postsStore.fetchPosts();
+});
 
-const news = [
-  {
-    id: "js-framework",
-    type: "news",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80",
-    tags: ["Technology"],
-    title: "New JavaScript Framework",
-    description:
-      "Claims unprecedented load speeds and a completely novel approach to state.",
-    author: "Sarah Jenkins",
-    date: "March 18, 2026",
-  },
-  {
-    id: "glassmorphism",
-    type: "news",
-    image: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80",
-    tags: ["Design"],
-    title: "Evolution of Glassmorphism",
-    description:
-      "How top brands are using translucent layers to create depth in 2026.",
-    author: "Marcus Chen",
-    date: "March 15, 2026",
-  },
-  {
-    id: "startup-funding",
-    type: "news",
-    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80",
-    tags: ["Business"],
-    title: "EdTech Startup Secures $5M",
-    description:
-      "Expansion plans for interactive tools aimed at university students globally.",
-    author: "Amina Yusuf",
-    date: "March 10, 2026",
-  },
-];
+// Helper to format ISO dates beautifully
+const formatDate = (dateStr) => {
+  if (!dateStr) return "TBA";
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  } catch {
+    return dateStr;
+  }
+};
 </script>
 
 <style lang="scss">
@@ -176,12 +101,12 @@ const news = [
   flex-direction: column;
   gap: 50px;
 
-  .news,
   .events,
-  .blogs {
+  .posts {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    
     h3 {
       font-size: $text-xl;
       font-weight: 900;
@@ -193,6 +118,7 @@ const news = [
       -webkit-text-fill-color: transparent;
       color: transparent;
     }
+    
     .container {
       min-width: 100%;
       display: grid;
@@ -200,11 +126,34 @@ const news = [
     }
   }
 
+  /* Loading & Empty States */
+  .status-state {
+    padding: 40px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    text-align: center;
+    color: #8a8a93;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-left-color: #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
   @include respond-to(600px, 1279px) {
     padding: 50px 25px;
-    .news,
     .events,
-    .blogs {
+    .posts {
       gap: 25px;
       > h3 {
         font-size: $text-2xl;
@@ -218,9 +167,8 @@ const news = [
 
   @include respond-to($min: 1280px) {
     padding: 100px;
-    .news,
     .events,
-    .blogs {
+    .posts {
       gap: 25px;
       > h3 {
         font-size: $text-3xl;

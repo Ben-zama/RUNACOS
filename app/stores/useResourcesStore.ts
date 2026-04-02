@@ -5,10 +5,12 @@ import { useRunacosApi } from '~/composables/useRunacosApi'
 export interface ResourcePayload {
   id?: string
   _id?: string
-  courseCode: string       // e.g., "CSC 301 PQ"
-  type: string       // e.g., "Past Question"
-  date?: string
-  fileUrl?: string   // The returned URL from the backend
+  title: string
+  courseCode: string 
+  resourceType: string 
+  uploadedBy: string
+  fileUrl?: string 
+  createdAt?: string
 }
 
 export const useResourcesStore = defineStore('resources', () => {
@@ -31,13 +33,10 @@ export const useResourcesStore = defineStore('resources', () => {
     }
   }
 
-  // Accepts FormData to handle file uploads natively
   const createResource = async (formData: FormData) => {
     isLoading.value = true
     error.value = null
     try {
-      // Remember our raw native fetch bypass if the composable acts up again! 
-      // For now, let's assume the composable is fixed.
       const res = await apiFetch('/resources', {
         method: 'POST',
         body: formData 

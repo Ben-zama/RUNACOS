@@ -23,27 +23,27 @@
         </div>
 
         <div class="dropdowns">
-          <select v-model="selectedDepartment" class="glass-select">
-            <option value="">All Departments</option>
-            <option value="Computer Science">Computer Science</option>
-            <option value="Cyber Security">Cyber Security</option>
-            <option value="Information Technology">
-              Information Technology
-            </option>
-          </select>
-
           <select v-model="selectedType" class="glass-select">
-            <option value="">All Types</option>
+            <option value="">All Resource Types</option>
             <option value="Past Question">Past Questions</option>
             <option value="Lecture Note">Lecture Notes</option>
-            <option value="Study Guide">Study Guides</option>
+            <option value="Study Material">Study Materials</option>
           </select>
         </div>
       </div>
     </section>
 
     <section class="resources-section">
-      <div v-if="filteredResources.length === 0" class="empty-state glass-card">
+      <div v-if="resourcesStore.error" class="error-alert glass-card" style="margin-bottom: 20px;">
+        <i class="bi bi-exclamation-triangle"></i> {{ resourcesStore.error }}
+      </div>
+
+      <div v-if="resourcesStore.isLoading && resourcesStore.resources.length === 0" class="empty-state glass-card">
+        <div class="spinner" style="margin-bottom: 15px;"></div>
+        <p>Loading academic resources...</p>
+      </div>
+
+      <div v-else-if="filteredResources.length === 0" class="empty-state glass-card">
         <i class="bi bi-folder-x"></i>
         <h3>No resources found</h3>
         <p>We couldn't find any files matching your search criteria.</p>
@@ -55,64 +55,54 @@
       <div v-else class="resources-grid">
         <div
           v-for="file in filteredResources"
-          :key="file.id"
+          :key="file.id || file._id"
           class="glass-card resource-card"
         >
           <div class="card-top">
-            <div class="file-icon" :class="file.format">
-              <i
-                v-if="file.format === 'pdf'"
-                class="bi bi-file-earmark-pdf-fill"
-              ></i>
-              <i
-                v-else-if="file.format === 'doc'"
-                class="bi bi-file-earmark-word-fill"
-              ></i>
-              <i
-                v-else-if="file.format === 'ppt'"
-                class="bi bi-file-earmark-slides-fill"
-              ></i>
+            <div class="file-icon" :class="getFileFormat(file.fileUrl)">
+              <i v-if="getFileFormat(file.fileUrl) === 'pdf'" class="bi bi-file-earmark-pdf-fill"></i>
+              <i v-else-if="getFileFormat(file.fileUrl) === 'doc'" class="bi bi-file-earmark-word-fill"></i>
+              <i v-else-if="getFileFormat(file.fileUrl) === 'ppt'" class="bi bi-file-earmark-slides-fill"></i>
               <i v-else class="bi bi-file-earmark-text-fill"></i>
             </div>
             <div class="badges">
-              <span class="pill type-pill">{{ file.type }}</span>
+              <span class="pill type-pill">{{ file.resourceType }}</span>
             </div>
           </div>
 
           <div class="card-middle">
-            <span class="course-code">{{ file.code }}</span>
+            <span class="course-code">{{ file.courseCode }}</span>
             <h3 class="file-title">{{ file.title }}</h3>
-            <span class="department"
-              >{{ file.department }} • {{ file.year }}</span
-            >
+            <span class="department">
+              By {{ file.uploadedBy || 'Admin' }} • {{ getYear(file.createdAt) }}
+            </span>
           </div>
 
           <div class="card-bottom">
-            <span class="file-size">{{ file.size }}</span>
-            <button class="download-btn">
+            <span class="file-size">Document</span>
+            <a :href="file.fileUrl" target="_blank" class="download-btn">
               <i class="bi bi-cloud-download"></i> Download
-            </button>
+            </a>
           </div>
         </div>
       </div>
     </section>
     </section>
 
-    <!-- Blogs -->
     <section class="blogs" ref="blogsRef">
       <div class="pill" ref="blogsPillRef">Blogs</div>
       <h2 ref="blogsTitleRef">Latest academic blogs</h2>
       <div class="container" ref="blogsContainerRef">
         <BlogCard
-          v-for="post in posts"
-          :key="post.id"
-          :to="post.link"
-          :imageSrc="post.image"
-          :tags="post.tags"
+          v-for="post in postsStore.posts"
+          :key="post.id || post._id"
+          :to="`/posts/${post.id || post._id}`"
+          :imageSrc="post.fileUrl || 'https://placehold.co/600x400/151515/8a8a93?text=Update'"
+          :tags="['Faculty Update']"
           :title="post.title"
-          :description="post.description"
-          :author="post.author"
-          :date="post.date"
+          :description="post.content"
+          :author="post.authorName"
+          :date="formatDate(post.createdAt)"
         />
       </div>
     </section>
@@ -120,7 +110,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useResourcesStore } from "~/stores/useResourcesStore";
+import { usePostsStore } from "~/stores/usePostsStore";
 
 definePageMeta({
   layout: {
@@ -135,151 +127,74 @@ useHead({
   title: 'Academics',
 })
 
+const resourcesStore = useResourcesStore();
+const postsStore = usePostsStore();
+
 // Filter States
 const searchQuery = ref("");
-const selectedDepartment = ref("");
 const selectedType = ref("");
 
 const resetFilters = () => {
   searchQuery.value = "";
-  selectedDepartment.value = "";
   selectedType.value = "";
 };
 
-// Dummy Resource Data
-const resources = [
-  {
-    id: 1,
-    code: "CSC 301",
-    title: "Compiler Construction Comprehensive PQ",
-    type: "Past Question",
-    format: "pdf",
-    department: "Computer Science",
-    year: "2023",
-    size: "2.4 MB",
-  },
-  {
-    id: 2,
-    code: "CYS 205",
-    title: "Intro to Cryptography & Network Security",
-    type: "Lecture Note",
-    format: "ppt",
-    department: "Cyber Security",
-    year: "2024",
-    size: "5.1 MB",
-  },
-  {
-    id: 3,
-    code: "IFT 402",
-    title: "Cloud Architecture Deployment Guide",
-    type: "Study Guide",
-    format: "doc",
-    department: "Information Technology",
-    year: "2023",
-    size: "1.8 MB",
-  },
-  {
-    id: 4,
-    code: "CSC 101",
-    title: "Introduction to Computing First Semester",
-    type: "Past Question",
-    format: "pdf",
-    department: "Computer Science",
-    year: "2024",
-    size: "3.2 MB",
-  },
-  {
-    id: 5,
-    code: "MTH 201",
-    title: "Mathematical Methods I Notes",
-    type: "Lecture Note",
-    format: "pdf",
-    department: "Computer Science",
-    year: "2022",
-    size: "4.5 MB",
-  },
-  {
-    id: 6,
-    code: "CYS 302",
-    title: "Ethical Hacking Lab Manual",
-    type: "Study Guide",
-    format: "pdf",
-    department: "Cyber Security",
-    year: "2024",
-    size: "8.0 MB",
-  },
-  {
-    id: 7,
-    code: "IFT 204",
-    title: "Database Management Systems PQ",
-    type: "Past Question",
-    format: "doc",
-    department: "Information Technology",
-    year: "2023",
-    size: "1.2 MB",
-  },
-  {
-    id: 8,
-    code: "CSC 411",
-    title: "Artificial Intelligence Seminar Slides",
-    type: "Lecture Note",
-    format: "ppt",
-    department: "Computer Science",
-    year: "2025",
-    size: "12.4 MB",
-  },
-];
+// Fetch data on mount
+onMounted(() => {
+  resourcesStore.fetchResources();
+  postsStore.fetchPosts();
+});
 
-// Academic blogs
-const posts = [
-  {
-    id: 1,
-    link: "/blog/scaling-financial-services",
-    image: "sample.jpg",
-    tags: ["Customer Stories", "AI", "Growth"],
-    title: "Scaling Financial Services Personalization for $100Bn+ Enterprise",
-    description: "Coframe Drives over 26% Lift in Financial Services",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: 2,
-    link: "/blog/next-post",
-    image: "sample.jpg",
-    tags: ["Engineering", "Vue3"],
-    title: "How we built a reusable component system",
-    description: "A deep dive into Nuxt 3 architectures.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: 3,
-    link: "/blog/next-post",
-    image: "sample.jpg",
-    tags: ["Engineering", "Vue3"],
-    title: "How we built a reusable component system",
-    description: "A deep dive into Nuxt 3 architectures.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-];
 
-// Vue Computed Property to instantly filter the grid
+
+// Helper functions for UI mapping
+const getFileFormat = (url) => {
+  if (!url) return 'unknown';
+  const lowerUrl = url.toLowerCase();
+  if (lowerUrl.endsWith('.pdf')) return 'pdf';
+  if (lowerUrl.endsWith('.doc') || lowerUrl.endsWith('.docx')) return 'doc';
+  if (lowerUrl.endsWith('.ppt') || lowerUrl.endsWith('.pptx')) return 'ppt';
+  return 'unknown';
+};
+
+const getYear = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).getFullYear();
+  } catch {
+    return 'N/A';
+  }
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "TBA";
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+// Computed property to instantly filter the grid
 const filteredResources = computed(() => {
-  return resources.filter((file) => {
-    const matchesSearch =
-      file.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      file.code.toLowerCase().includes(searchQuery.value.toLowerCase());
+  if (!resourcesStore.resources) return [];
 
-    const matchesDept =
-      selectedDepartment.value === "" ||
-      file.department === selectedDepartment.value;
-    const matchesType =
-      selectedType.value === "" || file.type === selectedType.value;
+  return resourcesStore.resources.filter((file) => {
+    const safeTitle = (file.title || '').toLowerCase();
+    const safeCode = (file.courseCode || '').toLowerCase();
+    const query = searchQuery.value.toLowerCase();
 
-    return matchesSearch && matchesDept && matchesType;
+    const matchesSearch = safeTitle.includes(query) || safeCode.includes(query);
+    const matchesType = selectedType.value === "" || file.resourceType === selectedType.value;
+
+    return matchesSearch && matchesType;
   });
 });
+
 </script>
 
 <style lang="scss">
@@ -293,6 +208,25 @@ const filteredResources = computed(() => {
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
+}
+
+/* Spinner CSS */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.error-alert { 
+  text-align: center; 
+  padding: 20px; 
+  color: #ff4757; 
+  border: 1px solid rgba(255, 71, 87, 0.3); 
+  background: rgba(255, 71, 87, 0.05); 
 }
 
 #academicsPage {
@@ -506,6 +440,8 @@ const filteredResources = computed(() => {
               justify-content: center;
               align-items: center;
               font-size: 1.5rem;
+              background: rgba(255, 255, 255, 0.1); /* fallback */
+              color: #fff;
 
               &.pdf {
                 background: rgba(231, 76, 60, 0.15);
@@ -581,6 +517,7 @@ const filteredResources = computed(() => {
               border-radius: 8px;
               font-size: 0.9rem;
               cursor: pointer;
+              text-decoration: none;
               transition: all 0.3s ease;
 
               i {

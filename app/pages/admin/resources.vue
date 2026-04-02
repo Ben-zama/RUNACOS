@@ -24,7 +24,7 @@
         <input 
           v-model="searchQuery" 
           type="search" 
-          placeholder="Search course code or file name..." 
+          placeholder="Search by title or course code..." 
           class="glass-input search-full" 
         />
       </div>
@@ -40,18 +40,26 @@
         <table>
           <thead>
             <tr>
-              <th>File Name / Course Code</th>
+              <th>Title & Course Code</th>
               <th class="desktop-only">Type</th>
-              <th class="desktop-only">Date Added</th>
+              <th class="desktop-only">Uploaded By</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="res in filteredResources" :key="res.id || res._id">
-              <td class="highlight">{{ res.courseCode }}</td>
-              <td class="desktop-only"><span class="pill">{{ res.type }}</span></td>
-              <td class="desktop-only">{{ formatDate(res.date) }}</td>
-              <td class="actions-cell">
+              <td data-label="Title & Course">
+                <div class="highlight user-cell">
+                  <div>
+                    {{ res.title }}
+                    <div style="font-size: 0.75rem; color: #9ca3af;">{{ res.courseCode }}</div>
+                  </div>
+                </div>
+              </td>
+              <td data-label="Type" class="desktop-only"><span class="pill">{{ res.resourceType }}</span></td>
+              <td data-label="Uploaded By" class="desktop-only">{{ res.uploadedBy || 'Admin' }}</td>
+              <td data-label="Actions" class="actions-cell">
+                <a v-if="res.fileUrl" :href="res.fileUrl" target="_blank" class="action-btn"><i class="bi bi-download"></i></a>
                 <button class="action-btn" @click="openModal(res)"><i class="bi bi-pencil"></i></button>
                 <button class="action-btn danger" @click="handleDelete(res.id || res._id)"><i class="bi bi-trash"></i></button>
               </td>
@@ -67,22 +75,27 @@
         
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label>Course Code / File Name</label>
-            <input v-model="form.courseCode" type="text" class="glass-input" required placeholder="e.g., CSC 301 - Compiler Construction PQ" />
+            <label>Resource Title *</label>
+            <input v-model="form.title" type="text" class="glass-input" required placeholder="e.g., 2023 Midterm PQ" />
           </div>
 
           <div class="form-group">
-            <label>Attach File (PDF, DOCX)</label>
-            <input type="file" @change="handleFileUpload" class="glass-input" :required="!isEditing" />
+            <label>Course Code *</label>
+            <input v-model="form.courseCode" type="text" class="glass-input" required placeholder="e.g., CSC 301" />
           </div>
 
           <div class="form-group">
-            <label>Resource Type</label>
-            <select v-model="form.type" class="glass-input" required>
+            <label>Resource Type *</label>
+            <select v-model="form.resourceType" class="glass-input" required>
               <option value="Past Question">Past Question</option>
               <option value="Lecture Note">Lecture Note</option>
               <option value="Study Material">Study Material</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label>Attach File (PDF, DOCX) <span v-if="!isEditing">*</span></label>
+            <input type="file" @change="handleFileUpload" class="glass-input" :required="!isEditing" />
           </div>
 
           <div class="modal-actions">
@@ -101,52 +114,41 @@
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useResourcesStore } from '~/stores/useResourcesStore';
 
-definePageMeta({ layout: 'admin' });
+definePageMeta({ layout: 'admin', middleware: "admin" });
 
 const resourcesStore = useResourcesStore();
-
-// Search State
 const searchQuery = ref('');
 
 onMounted(() => {
   resourcesStore.fetchResources();
 });
 
-// Crash-Proof Live Filtering Logic
 const filteredResources = computed(() => {
   if (!resourcesStore.resources) return [];
   
   return resourcesStore.resources.filter((res) => {
-    // Safely look for courseCode now
     const safeCode = res.courseCode || '';
+    const safeTitle = res.title || '';
     const safeQuery = searchQuery.value || '';
     
-    return safeCode.toLowerCase().includes(safeQuery.toLowerCase());
+    return safeCode.toLowerCase().includes(safeQuery.toLowerCase()) || 
+           safeTitle.toLowerCase().includes(safeQuery.toLowerCase());
   });
 });
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-};
-
-// --- Modal & Form Logic ---
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
 
 const form = reactive({
+  title: '',
   courseCode: '',
-  type: 'Past Question',
+  resourceType: 'Past Question',
   attachedFile: null
 });
 
 const resetForm = () => {
-  Object.assign(form, { courseCode: '', type: 'Past Question', attachedFile: null });
+  Object.assign(form, { title: '', courseCode: '', resourceType: 'Past Question', attachedFile: null });
   isEditing.value = false;
   editingId.value = null;
   
@@ -166,8 +168,9 @@ const openModal = (resource = null) => {
     isEditing.value = true;
     editingId.value = resource.id || resource._id;
     Object.assign(form, {
-      courseCode: resource.courseCode,
-      type: resource.type,
+      title: resource.title || '',
+      courseCode: resource.courseCode || '',
+      resourceType: resource.resourceType || 'Past Question',
       attachedFile: null 
     });
   } else {
@@ -189,12 +192,20 @@ const handleSubmit = async () => {
 
   try {
     const formData = new FormData();
-    formData.append("courseCode", form.courseCode); // Now explicitly sending 'courseCode'
-    formData.append("type", form.type);
-    formData.append("date", new Date().toISOString());
+    formData.append("title", form.title);
+    formData.append("courseCode", form.courseCode); 
+    formData.append("resourceType", form.resourceType); 
+    
+    // The spec requires an 'uploadedBy' field. Setting a default here:
+    formData.append("uploadedBy", "Admin"); 
+    
+    // The spec also marks 'fileUrl' as required in the form data, providing a fallback empty string
+    // if the backend logic relies on replacing it with a cloud URL after upload.
+    formData.append("fileUrl", ""); 
 
     if (form.attachedFile) {
-      formData.append("files", form.attachedFile); 
+      // Changed from 'files' to 'file' to match backend ImagesResources Schema
+      formData.append("file", form.attachedFile); 
     }
 
     if (isEditing.value) {
@@ -204,6 +215,7 @@ const handleSubmit = async () => {
     }
     closeModal();
   } catch (err) {
+    console.error(err);
     alert(`Failed to ${isEditing.value ? 'update' : 'upload'} resource. Check console.`);
   }
 };
@@ -222,10 +234,7 @@ const handleDelete = async (id) => {
 .page-container { display: flex; flex-direction: column; gap: 30px; color: #fff; }
 .page-header {
   display: flex; justify-content: space-between; align-items: flex-end;
-  .titles {
-    h2 { font-size: 2rem; margin: 0 0 5px 0; }
-    p { color: #8a8a93; margin: 0; }
-  }
+  .titles { h2 { font-size: 2rem; margin: 0 0 5px 0; } p { color: #8a8a93; margin: 0; } }
   .header-actions {
     display: flex; gap: 10px;
     .glass-btn {
@@ -241,15 +250,15 @@ const handleDelete = async (id) => {
 
 /* Table & Filter Styles */
 .table-card { padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); backdrop-filter: blur(10px); }
-.table-filters {
-  display: flex; gap: 15px; margin-bottom: 20px;
-  .glass-input {
-    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 15px; border-radius: 8px; outline: none;
-    &::placeholder { color: #8a8a93; }
-    &:focus { border-color: #3b82f6; }
-  }
-  .search-full { width: 100%; max-width: 400px; }
+.table-filters { display: flex; gap: 15px; margin-bottom: 20px; }
+.glass-input {
+  background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 15px; border-radius: 8px; outline: none; width: 100%; font-family: inherit;
+  &::placeholder { color: #8a8a93; }
+  &:focus { border-color: #3b82f6; }
+  option { background: #1a1a1a; color: #fff; }
 }
+.search-full { max-width: 400px; }
+
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #8a8a93; font-weight: 500; font-size: 0.9rem; }
@@ -271,7 +280,6 @@ td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-siz
 .glass-modal h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.5rem; }
 .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; width: 100%; }
 .form-group label { font-size: 0.85rem; color: #aaa; }
-.glass-input { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 12px; border-radius: 8px; outline: none; font-family: inherit; &:focus { border-color: #3498db; } option { background: #1a1a1a; color: #fff; } }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
 .modal-actions button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; transition: 0.2s; }
 .btn-cancel { background: transparent; color: #aaa; &:hover { color: #fff; background: rgba(255, 255, 255, 0.05); } }
@@ -280,7 +288,30 @@ td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-siz
 .empty-state, .loading-state, .error-alert { text-align: center; padding: 50px; color: #8a8a93; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px; margin-top: 20px; i { font-size: 3rem; margin-bottom: 10px; opacity: 0.5; } }
 .error-alert { border-color: rgba(255, 71, 87, 0.3); color: #ff4757; background: rgba(255, 71, 87, 0.05); padding: 20px; i { font-size: 1.5rem; margin-bottom: 0; margin-right: 10px; opacity: 1; } }
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
-@media (max-width: 600px) { .page-header { flex-direction: column; align-items: flex-start; gap: 15px; } .table-filters { flex-direction: column; .glass-input { max-width: 100%; } } }
-@media (max-width: 768px) { .desktop-only { display: none; } .table-responsive table { width: 100%; } }
+/* --- MOBILE RESPONSIVENESS --- */
+*, *::before, *::after { box-sizing: border-box; }
+
+@media (max-width: 768px) { 
+  .desktop-only { display: none !important; } 
+  .glass-modal { width: 95%; padding: 20px; margin: 10px auto; }
+  .page-header { flex-direction: column; align-items: stretch; gap: 15px; text-align: center; }
+  .header-actions { justify-content: center; flex-wrap: wrap; }
+  .table-filters { flex-direction: column; .search-full { max-width: 100%; } }
+
+  /* Transform Table into Cards */
+  table, thead, tbody, th, td, tr { display: block; width: 100%; }
+  thead tr { position: absolute; top: -9999px; left: -9999px; }
+  tr { margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; background: rgba(0, 0, 0, 0.15); padding: 5px 10px; }
+  td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 5px; font-size: 0.9rem; }
+  td:last-child { border-bottom: none; }
+  td::before { content: attr(data-label); font-weight: 600; color: #8a8a93; text-transform: uppercase; font-size: 0.75rem; text-align: left; padding-right: 15px; }
+  
+  .user-cell { justify-content: flex-end; text-align: right; }
+  .actions-cell { justify-content: flex-end; gap: 15px; }
+}
+
+@media (max-width: 480px) {
+  .page-header .titles h2 { font-size: 1.5rem; }
+  .glass-btn { padding: 8px 15px; font-size: 0.9rem; }
+}
 </style>

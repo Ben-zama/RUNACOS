@@ -143,7 +143,7 @@
       <h2 ref="galleryTitleRef">Explore the RUNACOS gallery</h2>
       <div class="container" ref="galleryContainerRef">
         <ClientOnly>
-          <vue3Marquee :duration="20" :clone="true">
+          <vue3Marquee :duration="50" :clone="true" :pause-on-hover="true">
             <div
               v-for="(img, index) in images"
               :key="index"
@@ -154,7 +154,7 @@
           </vue3Marquee>
         </ClientOnly>
         <ClientOnly>
-          <vue3Marquee :duration="20" :clone="true" direction="reverse">
+          <vue3Marquee :duration="50" :clone="true" :pause-on-hover="true" direction="reverse">
             <div
               v-for="(img, index) in images"
               :key="index"
@@ -173,15 +173,15 @@
       <h2 ref="blogsTitleRef">Latest blogs from staff, student and alumni</h2>
       <div class="container" ref="blogsContainerRef">
         <BlogCard
-          v-for="post in posts"
-          :key="post.id"
-          :to="`/posts/${post.id}`"
-          :imageSrc="post.image"
-          :tags="post.tags"
+          v-for="post in postsStore.posts"
+          :key="post.id || post._id"
+          :to="`/posts/${post.id || post._id}`"
+          :imageSrc="post.fileUrl || 'https://placehold.co/600x400/151515/8a8a93?text=Update'"
+          :tags="['Faculty Update']"
           :title="post.title"
-          :description="post.description"
-          :author="post.author"
-          :date="post.date"
+          :description="post.content"
+          :author="post.authorName"
+          :date="formatDate(post.createdAt)"
         />
       </div>
     </section>
@@ -206,7 +206,11 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useIntersectionObserver } from "@vueuse/core";
 
+
 gsap.registerPlugin(ScrollTrigger);
+
+import { usePostsStore } from "~/stores/usePostsStore";
+const postsStore = usePostsStore();
 
 // Hero section refs
 const heroRef = ref(null);
@@ -245,132 +249,132 @@ const blogsTitleRef = ref(null);
 const blogsContainerRef = ref(null);
 
 const images = ref([
-  "https://placehold.co/600x400",
-  "https://placehold.co/600x400",
-  "https://placehold.co/600x400",
-  "https://placehold.co/600x400",
-  "https://placehold.co/600x400",
-  "https://placehold.co/600x400",
+  "/gallery/image1.webp",
+  "/gallery/image2.webp",
+  "/gallery/image3.webp",
+  "/gallery/image4.webp",
+  "/gallery/image5.webp",
+  "/gallery/image6.webp",
+  "/gallery/image7.webp",
+  "/gallery/image8.webp",
+  "/gallery/image9.webp",
+  "/gallery/image10.webp",
 ]);
 
 const team = ref([
   {
     id: 1,
-    name: "Angelina Smith",
+    name: "Adebiyi Oluwademilade",
     role: "President",
-    badge: "Staff",
-    bgColor: "#d91f26",
-    image: "https://placehold.co/400x600/transparent/white?text=Person+1",
+    badge: "executive",
+    image: "/executives/president.webp",
   },
   {
     id: 2,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#182b3a",
-    image: "https://placehold.co/400x600/transparent/white?text=Person+2",
+    name: "Favour James",
+    role: "Vice President",
+    badge: "executive",
+    image: "/executives/vice_president.webp",
   },
   {
     id: 3,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#111111",
-    image: "https://placehold.co/400x600/transparent/white?text=Person+3",
+    name: "Omobobola Afolabi Ige",
+    role: "General Secretary",
+    badge: "executive",
+    image: "/executives/general_secretary.webp",
   },
   {
     id: 4,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#d97b1f",
-    image: "https://placehold.co/400x600/transparent/white?text=Person+4",
+    name: "Sijuade Deborah",
+    role: "Assistant General Secretary",
+    badge: "executive",
+    image: "/executives/ass_general_secretary.webp",
   },
   {
     id: 5,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+5",
+    name: "Akosshile Marvelous",
+    role: "Financial Secretary",
+    badge: "executive",
+    image: "/executives/financial_secretary.webp",
   },
   {
     id: 6,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+6",
+    name: "Ikeoluwa Ajayi",
+    role: "Treasure",
+    badge: "executive",
+    image: "/executives/treasurer.webp",
   },
   {
     id: 7,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+7",
+    name: "Akwari Ifeanyi Jonah",
+    role: "Social Director",
+    badge: "executive",
+    image: "/executives/social_director.webp",
   },
   {
     id: 8,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+8",
+    name: "Ogunsesan Daniel",
+    role: "Assistant Social Director",
+    badge: "executive",
+    image: "/executives/ass_social_director.webp",
   },
   {
     id: 9,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+9",
+    name: "Soloye Oluwaferanmi",
+    role: "Sport Director",
+    badge: "executive",
+    image: "/executives/sport_director.webp",
   },
   {
     id: 10,
-    name: "Angelina Smith",
-    role: "President",
-    badge: "Staff",
-    bgColor: "#e0e0e0",
-    image: "https://placehold.co/400x600/transparent/333?text=Person+10",
+    name: "Oso Daniel Ifedayo",
+    role: "Public Relations Officer",
+    badge: "executive",
+    image: "/executives/public_relations_officer.webp",
+  },
+  {
+    id: 11,
+    name: "Onuoha Isaac Ebube",
+    role: "Assistant Public Relations Officer",
+    badge: "executive",
+    image: "/executives/ass_public_relations_officer.webp",
+  },
+  {
+    id: 12,
+    name: "Ihedoro Chisom",
+    role: "Welfare Director",
+    badge: "executive",
+    image: "/executives/welfare_director.webp",
+  },
+  {
+    id: 13,
+    name: "Ojo Oreoluwa",
+    role: "Assistant Welfare Director",
+    badge: "executive",
+    image: "/executives/ass_welfare_director.webp",
+  },
+  {
+    id: 14,
+    name: "Olopade Oreoluwa",
+    role: "ICT Director",
+    badge: "executive",
+    image: "/executives/ict_director.webp",
+  },
+  {
+    id: 15,
+    name: "Peter Godbless",
+    role: "Academic Officer",
+    badge: "executive",
+    image: "/executives/academic_officer.webp",
+  },
+  {
+    id: 16,
+    name: "Shekinah Adekoya",
+    role: "Academic Officer II",
+    badge: "executive",
+    image: "/executives/academic_officer_2.webp",
   },
 ]);
-
-const posts = [
-  {
-    id: "scaling-financial",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80",
-    tags: ["AI", "Growth"],
-    title: "Scaling Financial Services",
-    description:
-      "Coframe Drives over 26% Lift in conversion rates using new predictive models.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: "vue3-components",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80",
-    tags: ["Vue3"],
-    title: "Reusable component system",
-    description:
-      "A deep dive into Nuxt 3 architectures and how to build scalable UI libraries.",
-    author: "Mark Henry",
-    date: "March 13, 2026",
-  },
-  {
-    id: "api-design",
-    type: "blog",
-    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80",
-    tags: ["Engineering"],
-    title: "REST vs GraphQL in 2026",
-    description:
-      "Choosing the right API paradigm for your next major tech stack.",
-    author: "Jane Doe",
-    date: "March 15, 2026",
-  },
-];
 
 let heroTl;
 let aboutTl;
@@ -584,7 +588,6 @@ onMounted(() => {
       "-=0.4"
     )
     .fromTo(
-      // Target the children (the BlogCards) for a staggered entrance
       blogsContainerRef.value.children,
       {
         y: 50,
@@ -599,6 +602,8 @@ onMounted(() => {
       },
       "-=0.4"
     );
+
+    postsStore.fetchPosts();
 });
 
 onUnmounted(() => {
@@ -609,6 +614,19 @@ onUnmounted(() => {
   if (blogsTl) blogsTl.kill();
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 });
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "TBA";
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 // Countup intersection observer
 const { stop } = useIntersectionObserver(

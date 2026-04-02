@@ -8,7 +8,7 @@
         </div>
 
         <div class="bottom">
-          <a v-for="link in item.links" :key="link.label" :href="link.url">{{
+          <a v-for="link in item.links" :key="link.label" :href="link.url" target="_blank">{{
             link.label
           }}</a>
         </div>
@@ -25,8 +25,8 @@
           </div>
 
           <div class="input-control">
-            <label for="studentId">Student/Matric ID</label>
-            <input id="studentId" v-model="form.studentId" type="text" placeholder="RUN/CSC/..." required />
+            <label for="studentId">Matric No.</label>
+            <input id="studentId" v-model="form.studentId" type="text" placeholder="RUN/CMP/..." required />
           </div>
         </div>
 
@@ -136,18 +136,18 @@ const contactPage = [
     text: "Connect on Linkedin",
     icon: "bi bi-linkedin",
     links: [
-      { url: "#", label: "Runacos" },
+      { url: "https://www.linkedin.com/company/runacos", label: "Redeemer's University Association of Computing Students (RUNACOS)" },
     ],
-  },
-  {
-    text: "Follow on X",
-    icon: "bi bi-twitter-x",
-    links: [{ url: "#", label: "@Runacos" }],
   },
   {
     text: "Follow on Instagram",
     icon: "bi bi-instagram",
-    links: [{ url: "#", label: "@Runacos" }],
+    links: [{ url: "https://www.instagram.com/the_runacos", label: "@the_runacos" }],
+  },
+  {
+    text: "Follow on Tiktok",
+    icon: "bi bi-tiktok",
+    links: [{ url: "https://tiktok.com/@the_runacos", label: "@the_runacos" }],
   },
 ];
 </script>

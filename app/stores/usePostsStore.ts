@@ -6,10 +6,11 @@ export interface PostPayload {
   id?: string
   _id?: string
   title: string
-  category: string
-  status: string
-  content: string // The main body of the blog post
-  date?: string
+  content: string 
+  authorName: string
+  authorId: string
+  createdAt?: string
+  fileUrl?: string // URL returned by the backend after upload
 }
 
 export const usePostsStore = defineStore('posts', () => {
@@ -27,20 +28,20 @@ export const usePostsStore = defineStore('posts', () => {
       posts.value = res
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch posts'
+      console.error(err)
     } finally {
       isLoading.value = false
     }
   }
 
-  const createPost = async (postData: PostPayload) => {
+  // Create uses FormData (Multipart) to handle the file upload
+  const createPost = async (formData: FormData) => {
     isLoading.value = true
     error.value = null
     try {
-      const { id, _id, ...cleanPayload } = postData
-
       const res = await apiFetch('/posts', {
         method: 'POST',
-        body: cleanPayload
+        body: formData
       })
       await fetchPosts() 
       return res
@@ -52,27 +53,28 @@ export const usePostsStore = defineStore('posts', () => {
     }
   }
 
-  const updatePost = async (idToUpdate: string, updates: Partial<PostPayload>) => {
+  // Update uses standard JSON (Record<string, any>) for text updates
+  const updatePost = async (idToUpdate: string, updates: Record<string, any>) => {
+    isLoading.value = true
+    error.value = null
     try {
-      const { id, _id, ...cleanUpdates } = updates
-
       const res = await apiFetch(`/posts/${idToUpdate}`, {
         method: 'PATCH',
-        body: cleanUpdates
+        body: updates
       })
-      
-      const index = posts.value.findIndex(p => p.id === idToUpdate || p._id === idToUpdate)
-      if (index !== -1) {
-        posts.value[index] = { ...posts.value[index], ...updates }
-      }
+      await fetchPosts()
       return res
     } catch (err: any) {
       error.value = err.message || 'Failed to update post'
       throw err
+    } finally {
+      isLoading.value = false
     }
   }
 
   const deletePost = async (idToDelete: string) => {
+    isLoading.value = true
+    error.value = null
     try {
       await apiFetch(`/posts/${idToDelete}`, {
         method: 'DELETE'
@@ -81,6 +83,8 @@ export const usePostsStore = defineStore('posts', () => {
     } catch (err: any) {
       error.value = err.message || 'Failed to delete post'
       throw err
+    } finally {
+      isLoading.value = false
     }
   }
 

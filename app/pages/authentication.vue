@@ -1,25 +1,29 @@
 <template>
   <div id="authPage">
     <div class="auth-wrapper">
-      
       <div class="brand-header">
-        <div class="logo-icon"><img src="~/assets/logo.png" alt="Logo"/></div>
+        <div class="logo-icon"><img src="~/assets/logo.png" alt="Logo" /></div>
         <h2>RUNACOS Portal</h2>
-        <p>{{ isLogin ? 'Welcome back! Please enter your details.' : 'Create an account to access the portal.' }}</p>
+        <p>
+          {{
+            isLogin
+              ? "Welcome back! Please enter your details."
+              : "Create an account to access the portal."
+          }}
+        </p>
       </div>
 
       <div class="glass-card auth-card">
-        
         <div class="tab-switcher">
-          <button 
-            :class="{ active: isLogin }" 
+          <button
+            :class="{ active: isLogin }"
             @click="isLogin = true"
             type="button"
           >
             Login
           </button>
-          <button 
-            :class="{ active: !isLogin }" 
+          <button
+            :class="{ active: !isLogin }"
             @click="isLogin = false"
             type="button"
           >
@@ -28,12 +32,18 @@
         </div>
 
         <form @submit.prevent="handleSubmit" class="auth-form">
-          
           <div v-show="!isLogin" class="form-group">
-            <label for="username">Username</label>
+            <label for="username">Full name</label>
             <div class="input-wrapper">
               <i class="bi bi-person"></i>
-              <input id="username" v-model="form.username" type="text" placeholder="johndoe" class="glass-input" :required="!isLogin" />
+              <input
+                id="username"
+                v-model="form.username"
+                type="text"
+                placeholder="John Doe"
+                class="glass-input"
+                :required="!isLogin"
+              />
             </div>
           </div>
 
@@ -41,7 +51,14 @@
             <label for="email">Email Address</label>
             <div class="input-wrapper">
               <i class="bi bi-envelope"></i>
-              <input id="email" v-model="form.email" type="email" placeholder="you@run.edu.ng" class="glass-input" required />
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                placeholder="you@run.edu.ng"
+                class="glass-input"
+                required
+              />
             </div>
           </div>
 
@@ -49,33 +66,47 @@
             <label for="password">Password</label>
             <div class="input-wrapper">
               <i class="bi bi-lock"></i>
-              <input id="password" v-model="form.password" type="password" placeholder="••••••••" class="glass-input" required />
+              <input
+                id="password"
+                v-model="form.password"
+                type="password"
+                placeholder="••••••••"
+                class="glass-input"
+                required
+              />
             </div>
           </div>
 
           <template v-if="!isLogin">
             <div class="form-group">
-               <label>I am registering as a:</label>
-               <div class="role-selector">
-                  <label>
-                    <input type="radio" v-model="form.role" value="student">
-                    Student
-                  </label>
-                  <label>
-                    <input type="radio" v-model="form.role" value="alumni">
-                    Alumni
-                  </label>
-               </div>
+              <label>I am registering as a:</label>
+              <div class="role-selector">
+                <label>
+                  <input type="radio" v-model="form.role" value="student" />
+                  Student
+                </label>
+                <label>
+                  <input type="radio" v-model="form.role" value="alumni" />
+                  Alumni
+                </label>
+              </div>
             </div>
 
-            <div class="form-row">
+            <div v-if="form.role !== 'admin'" class="form-row">
               <div class="form-group half">
                 <label for="department">Department</label>
-                <select id="department" v-model="form.studentInfo.department" class="glass-input glass-select" required>
+                <select
+                  id="department"
+                  v-model="form.studentInfo.department"
+                  class="glass-input glass-select"
+                  required
+                >
                   <option value="" disabled>Select Dept</option>
                   <option value="Computer Science">Computer Science</option>
                   <option value="Cyber Security">Cyber Security</option>
-                  <option value="Information Technology">Information Tech</option>
+                  <option value="Information Technology">
+                    Information Tech
+                  </option>
                 </select>
               </div>
 
@@ -83,17 +114,31 @@
                 <label for="matric">Matric Number</label>
                 <div class="input-wrapper">
                   <i class="bi bi-card-text"></i>
-                  <input id="matric" v-model="form.studentInfo.matricNumber" type="text" placeholder="RUN/CSC/..." class="glass-input" required />
+                  <input
+                    id="matric"
+                    v-model="form.studentInfo.matricNumber"
+                    type="text"
+                    placeholder="RUN/CSC/..."
+                    class="glass-input"
+                    required
+                  />
                 </div>
               </div>
             </div>
 
             <div v-if="form.role === 'alumni'" class="form-row">
-               <div class="form-group half">
+              <div class="form-group half">
                 <label for="gradYear">Graduation Year</label>
                 <div class="input-wrapper">
                   <i class="bi bi-calendar"></i>
-                  <input id="gradYear" v-model="form.alumniInfo.graduationYear" type="text" placeholder="e.g. 2023" class="glass-input" maxlength="4" />
+                  <input
+                    id="gradYear"
+                    v-model="form.alumniInfo.graduationYear"
+                    type="text"
+                    placeholder="e.g. 2023"
+                    class="glass-input"
+                    maxlength="4"
+                  />
                 </div>
               </div>
 
@@ -101,7 +146,13 @@
                 <label for="jobTitle">Job Title</label>
                 <div class="input-wrapper">
                   <i class="bi bi-briefcase"></i>
-                  <input id="jobTitle" v-model="form.alumniInfo.jobTitle" type="text" placeholder="Software Engineer" class="glass-input" />
+                  <input
+                    id="jobTitle"
+                    v-model="form.alumniInfo.jobTitle"
+                    type="text"
+                    placeholder="Software Engineer"
+                    class="glass-input"
+                  />
                 </div>
               </div>
             </div>
@@ -111,105 +162,140 @@
             <i class="bi bi-exclamation-circle"></i> {{ authStore.authError }}
           </div>
 
-          <button type="submit" class="glass-btn submit-btn" :disabled="authStore.isLoading">
-            <span v-if="authStore.isLoading" class="spinner"><i class="bi bi-arrow-repeat spin"></i></span>
-            {{ authStore.isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account') }}
+          <button
+            type="submit"
+            class="glass-btn submit-btn"
+            :disabled="authStore.isLoading"
+          >
+            <span v-if="authStore.isLoading" class="spinner"
+              ><i class="bi bi-arrow-repeat spin"></i
+            ></span>
+            {{
+              authStore.isLoading
+                ? "Processing..."
+                : isLogin
+                ? "Sign In"
+                : "Create Account"
+            }}
           </button>
-          
         </form>
+
+        <NuxtLink to="/" class="glass-btn logout-btn" style="margin-top: 15px;">
+          <i class="bi bi-house-door"></i> Back to homepage
+        </NuxtLink>
       </div>
-      
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useAuthStore } from '../stores/useAuthStore'
+import { ref, reactive } from "vue";
+import { useAuthStore } from "~/stores/useAuthStore";
 
 definePageMeta({
-    layout: 'empty',
-})
+  layout: "empty",
+});
 
-const authStore = useAuthStore()
-const isLogin = ref(true)
+const authStore = useAuthStore();
+const isLogin = ref(true);
 
 // Centralized form state
 const form = reactive({
-  username: '',
-  email: '',
-  password: '', 
-  role: 'student', // default role
+  username: "",
+  email: "",
+  password: "",
+  role: "student", // default role
   studentInfo: {
-    department: '',
-    matricNumber: ''
+    department: "",
+    matricNumber: "",
   },
   alumniInfo: {
-    graduationYear: '',
-    jobTitle: '',
-    currentCompany: '',
-    isStar: false
-  }
-})
+    graduationYear: "",
+    jobTitle: "",
+    currentCompany: "",
+    isStar: false,
+  },
+});
 
 const handleSubmit = async () => {
   try {
     if (isLogin.value) {
       // --- LOGIN FLOW ---
-      await authStore.login({
+      const response = await authStore.login({
         email: form.email,
-        password: form.password
-      })
-      alert('Login successful!')
-      // navigateTo('/dashboard')
-      
+        password: form.password,
+      });
+      alert("Login successful!");
+
+      const userRole = response?.role;
+
+      if (userRole === "admin") {
+        navigateTo("/admin");
+      } else {
+        navigateTo("/");
+      }
     } else {
       // --- SIGNUP FLOW ---
-      
-      // 1. Build the base payload with Student Info included for EVERYONE
+
+      // 1. Build the base payload
       const payload = {
         username: form.username,
         email: form.email,
         password: form.password,
         role: form.role,
-        studentInfo: {
-            department: form.studentInfo.department,
-            matricNumber: form.studentInfo.matricNumber
+      };
+
+      // 2. Safely handle the Student Info requirement for the backend
+      if (form.role === "admin") {
+        // Backend workaround: send dummy data so the server doesn't crash
+        payload.studentInfo = {
+          department: "Administration",
+          matricNumber: "N/A",
+        };
+      } else {
+        // Real data for students and alumni
+        payload.studentInfo = {
+          department: form.studentInfo.department,
+          matricNumber: form.studentInfo.matricNumber,
+        };
+      }
+
+      // 3. If they are an Alumni, append the extra alumni data
+      if (form.role === "alumni") {
+        let formattedGradYear = form.alumniInfo.graduationYear;
+        if (formattedGradYear && formattedGradYear.length === 4) {
+          formattedGradYear = `${formattedGradYear}-10-01T00:00:00Z`;
         }
+
+        payload.alumniInfo = {
+          graduationYear: formattedGradYear,
+          jobTitle: form.alumniInfo.jobTitle,
+          currentCompany: form.alumniInfo.currentCompany,
+          isStar: form.alumniInfo.isStar,
+        };
       }
 
-      // 2. If they are an Alumni, append the extra alumni data
-      if (form.role === 'alumni') {
-         // Auto-format the year to October 1st, 12:00 AM (UTC)
-         let formattedGradYear = form.alumniInfo.graduationYear
-         if (formattedGradYear && formattedGradYear.length === 4) {
-           formattedGradYear = `${formattedGradYear}-10-01T00:00:00Z`
-         }
+      // 4. Fire the signup action
+      await authStore.signup(payload);
+      alert("Account created successfully! Please log in.");
 
-         payload.alumniInfo = {
-            graduationYear: formattedGradYear, 
-            jobTitle: form.alumniInfo.jobTitle,
-            currentCompany: form.alumniInfo.currentCompany,
-            isStar: form.alumniInfo.isStar
-         }
-      }
-      
-      // 3. Fire the signup action
-      await authStore.signup(payload)
-      alert('Account created successfully! Please log in.')
-      
-      // Automatically switch to the login tab after successful signup
-      isLogin.value = true
-      form.password = '' 
+      isLogin.value = true;
+      form.password = "";
     }
   } catch (err) {
-    console.error('Auth error:', err)
+    console.error("Auth error:", err);
   }
-}
+};
+
+const handleLogout = () => {
+  if (confirm("Are you sure you want to log out?")) {
+    authStore.logout();
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-
+/* Keeping your exact CSS, just adding a small margin-top inline to the logout button to space it out from the form */
 #authPage {
   display: flex;
   justify-content: center;
@@ -318,7 +404,9 @@ const handleSubmit = async () => {
     flex-direction: column;
     gap: 8px;
 
-    &.half { flex: 1; }
+    &.half {
+      flex: 1;
+    }
 
     label {
       font-size: 0.85rem;
@@ -339,7 +427,9 @@ const handleSubmit = async () => {
         font-size: 1.1rem;
       }
 
-      .glass-input { padding-left: 45px; }
+      .glass-input {
+        padding-left: 45px;
+      }
     }
 
     .glass-input {
@@ -353,10 +443,12 @@ const handleSubmit = async () => {
       outline: none;
       transition: border-color 0.3s, background 0.3s;
 
-      &::placeholder { color: rgba(138, 138, 147, 0.5); }
-      &:focus { 
-        border-color: $accent-color; 
-        background: rgba(0, 0, 0, 0.4); 
+      &::placeholder {
+        color: rgba(138, 138, 147, 0.5);
+      }
+      &:focus {
+        border-color: #3b82f6;
+        background: rgba(0, 0, 0, 0.4);
       }
     }
 
@@ -367,16 +459,17 @@ const handleSubmit = async () => {
       background-repeat: no-repeat;
       background-position-x: 95%;
       background-position-y: 50%;
-      option { color: #000; }
+      option {
+        color: #000;
+      }
     }
   }
 
-  /* Added Role Selector Styles */
   .role-selector {
     display: flex;
     gap: 15px;
     margin-top: 5px;
-    
+
     label {
       display: flex;
       align-items: center;
@@ -402,7 +495,7 @@ const handleSubmit = async () => {
   .submit-btn {
     margin-top: 10px;
     width: 100%;
-    background: $accent-color;
+    background: #3b82f6;
     border: none;
     color: #fff;
     padding: 15px;
@@ -431,13 +524,40 @@ const handleSubmit = async () => {
     }
   }
 
+  .logout-btn {
+    width: 100%;
+    background: transparent;
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logout-btn:hover {
+    background: rgba(255, 71, 87, 0.1);
+    border-color: #ff4757;
+  }
+
   @keyframes spin {
-    100% { transform: rotate(360deg); }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   @media (max-width: 480px) {
-    .auth-wrapper { max-width: 100%; }
-    .form-row { flex-direction: column; gap: 20px; }
+    .auth-wrapper {
+      max-width: 100%;
+    }
+    .form-row {
+      flex-direction: column;
+      gap: 20px;
+    }
   }
 }
 </style>

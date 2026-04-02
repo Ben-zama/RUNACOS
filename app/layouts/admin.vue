@@ -26,7 +26,7 @@
 
       <div class="sidebar-footer">
         <NuxtLink to="/" class="home"><i class="bi bi-house"></i>Home Page</NuxtLink>
-        <a href="#" class="logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        <button @click="handleLogout" class="logout"><i class="bi bi-box-arrow-right"></i> Logout</button>
       </div>
     </aside>
 
@@ -38,9 +38,29 @@
           </button>
           <h2>Dashboard</h2>
         </div>
+        
         <div class="right-controls">
-          <div class="profile-avatar">
-            <img src="https://placehold.co/100x100/151515/8a8a93?text=A" alt="Admin" />
+          <div class="user-profile">
+            <div class="avatar-circle" @click="toggleUserMenu">
+              {{ userInitial }}
+            </div>
+
+            <div v-if="isUserMenuOpen" class="user-dropdown">
+              <div class="user-info">
+                <p class="email">{{ currentUser?.email || 'admin@runacos.com' }}</p>
+                <p class="role">Admin</p>
+              </div>
+              
+              <div class="dropdown-actions">
+                <NuxtLink to="/" class="dropdown-item text-primary" @click="isUserMenuOpen = false">
+                  <i class="bi bi-house"></i> Home Page
+                </NuxtLink>
+                
+                <button class="dropdown-item text-danger" @click="handleLogout">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -53,15 +73,85 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useCookie, navigateTo } from '#imports';
+import { useAuthStore } from "~/stores/useAuthStore";
 
-const mobileMenuOpen = ref(false);
+const authStore = useAuthStore()
 const route = useRoute();
+const mobileMenuOpen = ref(false);
 
-// Automatically close mobile menu when a link is clicked
+// --- JWT Decoder Helper ---
+function parseJwt(token) {
+  try {
+    if (!token) return null;
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+// --- AUTHENTICATION STATE & LOGIC ---
+const authToken = useCookie("auth_token");
+const userCookie = useCookie("runacos_user");
+
+const decodedUser = computed(() => parseJwt(authToken.value));
+
+// Get user data from store, fallback to cookie or decoded token
+const currentUser = computed(() => {
+  return authStore.currentUser || userCookie.value || decodedUser.value || null;
+});
+
+const userInitial = computed(
+  () => currentUser.value?.email?.charAt(0).toUpperCase() || "A"
+);
+
+const isUserMenuOpen = ref(false);
+
+const toggleUserMenu = () => {
+  isUserMenuOpen.value = !isUserMenuOpen.value;
+};
+
+// Close dropdown if clicking outside
+const handleClickOutside = (e) => {
+  if (!e.target.closest(".user-profile")) {
+    isUserMenuOpen.value = false;
+  }
+};
+
+// Automatically close mobile menu when a route changes
 watch(() => route.path, () => {
   mobileMenuOpen.value = false;
+});
+
+const handleLogout = () => {
+  if (confirm("Are you sure you want to log out?")) {
+    isUserMenuOpen.value = false;
+    
+    if (authStore.logout) {
+      authStore.logout();
+    } else {
+      authToken.value = null;
+      useCookie("user_role").value = null;
+      authStore.currentUser = null;
+      navigateTo("/authentication");
+    }
+  }
+};
+
+// --- LIFECYCLE HOOKS ---
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
@@ -194,6 +284,7 @@ watch(() => route.path, () => {
     flex-direction: column;
     padding: 25px 20px;
     position: fixed;
+    top: 0;
     height: 100vh;
     z-index: 50;
     transition: transform 0.3s ease;
@@ -206,7 +297,8 @@ watch(() => route.path, () => {
 
       .logo-icon {
         width: 40px;
-        height: 40px;        border-radius: 10px;
+        height: 40px;        
+        border-radius: 10px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -267,7 +359,7 @@ watch(() => route.path, () => {
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       padding-top: 20px;
 
-      a {
+      a, button {
         display: flex;
         align-items: center;
         gap: 12px;
@@ -276,6 +368,11 @@ watch(() => route.path, () => {
         text-decoration: none;
         border-radius: 10px;
         transition: 0.3s;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 1rem;
 
         &:hover { color: #fff; }
         &.logout:hover { color: #ff4757; background: rgba(255, 71, 87, 0.1); }
@@ -326,13 +423,99 @@ watch(() => route.path, () => {
       display: flex;
       align-items: center;
 
-      .profile-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        img { width: 100%; height: 100%; object-fit: cover; }
+      .user-profile {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .avatar-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: $accent-color;
+          color: #fff;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: bold;
+          font-size: 1.2rem;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: all 0.3s ease;
+
+          &:hover {
+            border-color: #fff;
+            transform: scale(1.05);
+          }
+        }
+
+        .user-dropdown {
+          position: absolute;
+          top: 55px;
+          right: 0;
+          width: 220px;
+          background: linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 15px;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+          z-index: 100;
+          animation: popDown 0.2s ease-out forwards;
+
+          @keyframes popDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+
+          .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            
+            p { margin: 0; overflow: hidden; text-overflow: ellipsis; }
+            .email { color: #fff; font-weight: bold; font-size: 0.95rem; line-height: 1.2; }
+            .role { color: $accent-color; opacity: 0.8; font-size: 0.85rem; text-transform: capitalize; }
+          }
+
+          .dropdown-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            .dropdown-item {
+              background: transparent;
+              border: none;
+              text-align: left;
+              padding: 10px 12px;
+              border-radius: 6px;
+              cursor: pointer;
+              transition: 0.2s;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              text-decoration: none;
+              font-size: 0.95rem;
+              color: #fff;
+              font-family: inherit;
+
+              &:hover { background: rgba(255, 255, 255, 0.05); }
+
+              &.text-danger {
+                color: #ff4757;
+                &:hover { background: rgba(255, 71, 87, 0.1); }
+              }
+              &.text-primary {
+                color: #3498db;
+                &:hover { background: rgba(52, 152, 219, 0.1); }
+              }
+            }
+          }
+        }
       }
     }
   }
