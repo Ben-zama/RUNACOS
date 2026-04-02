@@ -38,7 +38,7 @@ export default defineNuxtConfig({
   }, 
   runtimeConfig: {
     public: {
-      apiBase: "https://runacos-api-889007588961.us-central1.run.app/docs",
+      apiBase: "https://runacos-api-889007588961.us-central1.run.app",
     },
   },
 });
