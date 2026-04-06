@@ -1,36 +1,44 @@
 <template>
   <div id="event-details-page">
     <div class="container-wrapper" v-if="event && !isLoading">
-      
       <NuxtLink to="/news-events" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Events
       </NuxtLink>
-      
+
       <div class="event-info glass-panel">
         <div class="image-wrapper">
-          <img :src="event.fileUrl || 'https://placehold.co/1000x400/151515/8a8a93?text=Event+Banner'" :alt="event.title" />
+          <img
+            :src="
+              event.fileUrl ||
+              'https://placehold.co/1000x400/151515/8a8a93?text=Event+Banner'
+            "
+            :alt="event.title"
+          />
           <div class="overlay"></div>
         </div>
-        
+
         <div class="info-content">
           <div class="meta-tags">
-            <span class="pill"><i class="bi bi-calendar3"></i> {{ formatDate(event.eventTime) }}</span>
-            <span class="pill"><i class="bi bi-geo-alt-fill"></i> {{ event.eventType || 'Campus' }}</span>
+            <span class="pill"
+              ><i class="bi bi-calendar3"></i>
+              {{ formatDate(event.eventTime) }}</span
+            >
+            <span class="pill"
+              ><i class="bi bi-geo-alt-fill"></i>
+              {{ event.eventType || "Campus" }}</span
+            >
           </div>
-          
+
           <h1>{{ event.title }}</h1>
           <p class="description">{{ event.description }}</p>
-          
+
           <div class="action-section">
-            <button class="register-btn" @click="handleRegistration">
-              Register Here <i class="bi bi-arrow-right"></i>
-            </button>
+            <ctaButton button-label="Register here" link="/" />
           </div>
         </div>
       </div>
-
     </div>
-    
+
     <div v-else-if="error" class="status-state">
       <i class="bi bi-exclamation-triangle"></i>
       <h2>{{ error }}</h2>
@@ -47,9 +55,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router'; 
-import { useRunacosApi } from '~/composables/useRunacosApi';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
+import { useRunacosApi } from "~/composables/useRunacosApi";
 
 const route = useRoute();
 const eventId = route.params.id;
@@ -61,9 +69,9 @@ definePageMeta({
       showPageTitle: true,
     },
   },
-})
+});
 
-const dynamicPageTitle = useState('pageTitle', () => 'Loading...');
+const dynamicPageTitle = useState("pageTitle", () => "Loading...");
 const event = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
@@ -72,13 +80,13 @@ const error = ref(null);
 const formatDate = (dateStr) => {
   if (!dateStr) return "TBA";
   try {
-    return new Date(dateStr).toLocaleString('en-US', { 
-      weekday: 'long', 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
+    return new Date(dateStr).toLocaleString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
     });
   } catch {
     return dateStr;
@@ -89,19 +97,19 @@ const formatDate = (dateStr) => {
 const handleRegistration = () => {
   if (!event.value) return;
   alert(`Registration initiated for: ${event.value.title}`);
-}
+};
 
 // --- API Data Fetching ---
 const fetchEventDetails = async () => {
   isLoading.value = true;
   error.value = null;
-  
+
   try {
     const data = await apiFetch(`/events/${eventId}`);
-    
+
     // Safely assign event (handling cases where backend wraps in an array)
     event.value = Array.isArray(data) ? data[0] : data;
-    
+
     if (event.value) {
       route.meta.pageTitle = event.value.title;
       dynamicPageTitle.value = event.value.title;
@@ -119,13 +127,13 @@ const fetchEventDetails = async () => {
 };
 
 onMounted(() => {
-  route.meta.pageTitle = 'Loading...';
+  route.meta.pageTitle = "Loading...";
   fetchEventDetails();
 });
 
 onUnmounted(() => {
-  dynamicPageTitle.value = '';
-})
+  dynamicPageTitle.value = "";
+});
 </script>
 
 <style lang="scss" scoped>
@@ -140,7 +148,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-width: 900px; 
+    max-width: 900px;
     width: 100%;
   }
 
@@ -154,26 +162,30 @@ onUnmounted(() => {
     transition: color 0.3s ease;
     width: max-content;
 
-    i { transition: transform 0.3s ease; }
+    i {
+      transition: transform 0.3s ease;
+    }
 
     &:hover {
-      color: #fff; 
-      i { transform: translateX(-5px); }
+      color: var(--text-color);
+      i {
+        transform: translateX(-5px);
+      }
     }
   }
 
   /* Shared Glassmorphism Base */
   .glass-panel {
     background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.04) 0%,
-      rgba(255, 255, 255, 0.01) 100%
-    );
+    145deg,
+    color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+    color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+  );
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
     border-radius: 20px;
     overflow: hidden;
-    color: #fff;
+    color: var(--text-color);
   }
 
   /* Event Info Card */
@@ -184,9 +196,9 @@ onUnmounted(() => {
     .image-wrapper {
       position: relative;
       width: 100%;
-      height: 400px; 
+      height: 400px;
       overflow: hidden;
-      
+
       img {
         width: 100%;
         height: 100%;
@@ -196,7 +208,11 @@ onUnmounted(() => {
       .overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+        background: linear-gradient(
+            to top,
+            color-mix(in srgb, var(--alternate-color) 50%, transparent),
+            transparent 50%
+          );
       }
     }
 
@@ -222,12 +238,14 @@ onUnmounted(() => {
           border: 1px solid rgba(255, 255, 255, 0.1);
           padding: 8px 20px;
           border-radius: 30px;
-          font-family: $alternate-font; 
+          font-family: $alternate-font;
           font-size: 0.95rem;
           font-weight: 600;
           color: #fff;
 
-          i { color: $accent-color; } 
+          i {
+            color: $accent-color;
+          }
         }
       }
 
@@ -235,7 +253,11 @@ onUnmounted(() => {
         font-size: 2.5rem;
         margin: 0;
         line-height: 1.2;
-        background: linear-gradient(135deg, #fff, #c1c0c0);
+        background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
@@ -243,9 +265,10 @@ onUnmounted(() => {
       .description {
         font-size: 1.1rem;
         line-height: 1.8;
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--text-color);
+        opcity: 0.8;
         margin: 0;
-        white-space: pre-wrap; /* Ensures formatting from the backend text area stays intact */
+        white-space: pre-wrap; 
       }
 
       /* Registration CTA Button */
@@ -257,7 +280,7 @@ onUnmounted(() => {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          background: $accent-color; 
+          background: $accent-color;
           color: #fff;
           border: none;
           padding: 16px 32px;
@@ -295,15 +318,27 @@ onUnmounted(() => {
     color: #8a8a93;
     text-align: center;
 
-    i { font-size: 2.5rem; }
-    h2 { font-size: 1.2rem; font-weight: 500; margin: 0; }
-    
-    .spin { animation: spin 1s linear infinite; }
-    .mt-4 { margin-top: 1.5rem; }
+    i {
+      font-size: 2.5rem;
+    }
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+    .mt-4 {
+      margin-top: 1.5rem;
+    }
   }
 
   @keyframes spin {
-    100% { transform: rotate(360deg); }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   /* Responsive Layout */
@@ -316,8 +351,10 @@ onUnmounted(() => {
 
     .event-info .info-content {
       padding: 50px 60px;
-      
-      h1 { font-size: 3.5rem; }
+
+      h1 {
+        font-size: 3.5rem;
+      }
     }
   }
 }

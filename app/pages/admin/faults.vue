@@ -6,7 +6,7 @@
         <p>View reported faults</p>
       </div>
       <button
-        class="refresh-btn"
+        class="refresh-btn glass-btn"
         @click="faultsStore.fetchFaults"
         :disabled="faultsStore.isLoading"
       >
@@ -82,7 +82,7 @@
   </div>
 
   <div v-if="isModalOpen" class="modal-overlay" @click.self="closeEditModal">
-    <div class="glass-modal">
+    <div class="modal">
       <h3>Update Fault</h3>
 
       <form @submit.prevent="handleUpdate">
@@ -187,7 +187,6 @@ const handleUpdate = async () => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  color: #fff;
 }
 
 .page-header {
@@ -205,24 +204,6 @@ const handleUpdate = async () => {
   }
 
   .refresh-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.3s;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
 
     .spin {
       animation: spin 1s linear infinite;
@@ -239,11 +220,11 @@ const handleUpdate = async () => {
 
 .fault-card {
   background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+      145deg,
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -335,64 +316,35 @@ const handleUpdate = async () => {
 
   .card-body {
     .description {
-      color: #ccc;
       font-size: 0.9rem;
       line-height: 1.5;
       margin: 0 0 15px 0;
+      opacity: 0.8;
     }
 
     .meta-info {
       display: flex;
       gap: 15px;
       font-size: 0.85rem;
-      color: #8a8a93;
+      opacity: 0.6;
     }
   }
 
   .card-footer {
     margin-top: auto;
     padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
     font-size: 0.85rem;
 
     strong {
-      color: #fff;
       display: block;
       margin-bottom: 5px;
     }
     p {
       margin: 0;
-      color: #aaa;
+      opacity: 0.6;
       font-style: italic;
     }
-  }
-}
-
-/* UI States */
-.error-alert {
-  background: rgba(255, 71, 87, 0.1);
-  color: #ff4757;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 71, 87, 0.3);
-}
-
-.empty-state,
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px;
-  color: #8a8a93;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-
-  i {
-    font-size: 3rem;
-    margin-bottom: 10px;
-    opacity: 0.5;
   }
 }
 
@@ -407,109 +359,6 @@ const handleUpdate = async () => {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
-  }
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.glass-modal {
-  background: linear-gradient(
-    145deg,
-    rgba(30, 30, 30, 0.9) 0%,
-    rgba(20, 20, 20, 0.95) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 25px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-
-  h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.3rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 15px;
-
-    label {
-      font-size: 0.85rem;
-      color: #aaa;
-    }
-
-    .glass-input {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff;
-      padding: 10px 12px;
-      border-radius: 8px;
-      outline: none;
-      font-family: inherit;
-
-      &:focus {
-        border-color: $accent-color;
-      }
-
-      option {
-        background: #1a1a1a;
-        color: #fff;
-      }
-    }
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-
-    button {
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .btn-cancel {
-      background: transparent;
-      color: #aaa;
-      &:hover {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.05);
-      }
-    }
-
-    .btn-save {
-      background: $accent-color;
-      color: #fff;
-      &:hover:not(:disabled) {
-        background: #2980b9;
-      }
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-    }
   }
 }
 </style>

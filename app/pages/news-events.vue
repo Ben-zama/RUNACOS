@@ -112,7 +112,11 @@ const formatDate = (dateStr) => {
       font-weight: 900;
       line-height: 1.1;
       max-width: 600px;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
+      background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -142,7 +146,7 @@ const formatDate = (dateStr) => {
       width: 30px;
       height: 30px;
       border: 3px solid rgba(255, 255, 255, 0.1);
-      border-left-color: #3498db;
+      border-left-color: $accent-color;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }

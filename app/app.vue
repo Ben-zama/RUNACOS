@@ -4,6 +4,9 @@
       <Meta name="color-scheme" content="only light" />
     </Head>
     <NuxtLayout />
+    <div class="box">
+      <ThemeToggle />
+    </div>
   </div>
 </template>
 
@@ -16,5 +19,9 @@
 .page-leave-to {
   opacity: 0;
   filter: blur(1rem);
+}
+
+.box {
+  display: none;
 }
 </style>

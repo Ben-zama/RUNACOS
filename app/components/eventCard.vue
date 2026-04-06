@@ -65,16 +65,14 @@ defineProps({
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  
-  /* Bento Card Base Styles */
   padding: 20px;
   background: linear-gradient(
-    145deg,
-    $translucent-alternate-color 0%,
-    $translucent-secondary-color 100%
-  );
+      145deg,
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+    );
   backdrop-filter: blur(10px);
-  border: 1px solid $translucent-secondary-color-50;
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-radius: 8px;
   transition: transform 0.3s ease, border-color 0.3s ease;
 
@@ -103,8 +101,8 @@ defineProps({
       align-items: center;
       gap: 6px;
       padding: 6px 12px;
-      background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent); 
+            border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
       font-family: $alternate-font;
       font-size: $text-sm;
       border-radius: 6px;
@@ -124,10 +122,18 @@ defineProps({
     gap: 25px;
     
     h3 {
-      flex-shrink: 1;
-      font-size: $text-lg;
-      margin: 0;
-      transition: 0.3s;
+      font-size: $text-xl;
+            font-weight: 900;
+            line-height: 1.1;
+            max-width: 600px;
+            background: linear-gradient(135deg, var(--text-color), var(--text-gradient-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            flex-shrink: 1;
+            margin: 0;
+            transition: 0.3s;
     }
     
     .icon {
@@ -139,8 +145,8 @@ defineProps({
       justify-content: center;
       align-items: center;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent); 
+            border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
       overflow: hidden;
       transition: 0.3s;
       
@@ -180,7 +186,7 @@ defineProps({
         background: $accent-color;
         border-color: $accent-color;
         i {
-          color: #fff; /* Swap icon color to match background */
+          color: #fff;
         }
       }
     }

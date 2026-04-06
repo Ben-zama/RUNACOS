@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   const authError = ref<string | null>(null)
 
   const authToken = useCookie('auth_token', {
-    maxAge: 60 * 60 * 24 * 5  //keeps the user logged in for 7 days
+    maxAge: 3600
   })
 
   // Registration Action
@@ -86,14 +86,14 @@ export const useAuthStore = defineStore('auth', () => {
       currentUser.value = response
       
       // 1. Save the idToken (NOT the localId) as your VIP pass
-      const authToken = useCookie('auth_token', { maxAge: 60 * 60 * 24 * 7 })
+      const authToken = useCookie('auth_token', { maxAge: 3600 })
       authToken.value = response.idToken 
       
       // 2. Crack open the token to find the role!
       const decodedToken = parseJwt(response.idToken)
       
       // 3. Save the hidden role to your cookie (fallback to 'student' if missing)
-      const userRole = useCookie('user_role', { maxAge: 60 * 60 * 24 * 7 })
+      const userRole = useCookie('user_role', { maxAge: 3600 })
       userRole.value = decodedToken?.role || 'student'
       
       // We must return the decoded role so your UI knows where to navigate

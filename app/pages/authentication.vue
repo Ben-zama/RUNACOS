@@ -118,7 +118,7 @@
                     id="matric"
                     v-model="form.studentInfo.matricNumber"
                     type="text"
-                    placeholder="RUN/CSC/..."
+                    placeholder="RUN/CMP/..."
                     class="glass-input"
                     required
                   />
@@ -180,7 +180,7 @@
           </button>
         </form>
 
-        <NuxtLink to="/" class="glass-btn logout-btn" style="margin-top: 15px;">
+        <NuxtLink to="/" class="glass-btn" style="margin-top: 15px;">
           <i class="bi bi-house-door"></i> Back to homepage
         </NuxtLink>
       </div>
@@ -301,18 +301,17 @@ const handleLogout = () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  color: #fff;
   padding: 20px;
   font-family: inherit;
 
   @mixin glass-panel {
     background: linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.04) 0%,
-      rgba(255, 255, 255, 0.01) 100%
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
     );
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
     border-radius: 20px;
   }
 
@@ -343,14 +342,17 @@ const handleLogout = () => {
       margin: 0;
       font-size: 1.8rem;
       font-weight: 800;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
+      background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     p {
       margin: 0;
-      color: #8a8a93;
       font-size: 0.95rem;
     }
   }
@@ -362,17 +364,16 @@ const handleLogout = () => {
 
   .tab-switcher {
     display: flex;
-    background: rgba(0, 0, 0, 0.3);
+    background: color-mix(in srgb, var(--secondary-color) 10%, transparent);
     border-radius: 12px;
     padding: 5px;
     margin-bottom: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
 
     button {
       flex: 1;
       background: transparent;
       border: none;
-      color: #8a8a93;
       padding: 10px 0;
       border-radius: 8px;
       font-weight: 600;
@@ -381,7 +382,7 @@ const handleLogout = () => {
       transition: all 0.3s ease;
 
       &.active {
-        background: rgba(255, 255, 255, 0.1);
+        background: $accent-color;
         color: #fff;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
@@ -410,7 +411,6 @@ const handleLogout = () => {
 
     label {
       font-size: 0.85rem;
-      color: #ccc;
       font-weight: 500;
       margin-left: 5px;
     }
@@ -434,9 +434,14 @@ const handleLogout = () => {
 
     .glass-input {
       width: 100%;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff;
+       background: color-mix(
+            in srgb,
+            var(--alternate-color) 50%,
+            transparent
+          );
+          border: 1px solid
+            color-mix(in srgb, var(--text-color) 20%, transparent);
+          color: #8a8a93;
       padding: 14px 15px;
       border-radius: 12px;
       font-size: 1rem;
@@ -447,8 +452,7 @@ const handleLogout = () => {
         color: rgba(138, 138, 147, 0.5);
       }
       &:focus {
-        border-color: #3b82f6;
-        background: rgba(0, 0, 0, 0.4);
+        border-color: rgba($accent-color, 0.8);
       }
     }
 
@@ -461,6 +465,7 @@ const handleLogout = () => {
       background-position-y: 50%;
       option {
         color: #000;
+        background: #fff;
       }
     }
   }
@@ -476,7 +481,6 @@ const handleLogout = () => {
       gap: 5px;
       cursor: pointer;
       font-size: 0.9rem;
-      color: #fff;
     }
   }
 
@@ -495,7 +499,7 @@ const handleLogout = () => {
   .submit-btn {
     margin-top: 10px;
     width: 100%;
-    background: #3b82f6;
+    background: $accent-color;
     border: none;
     color: #fff;
     padding: 15px;
@@ -522,26 +526,6 @@ const handleLogout = () => {
     .spin {
       animation: spin 1s linear infinite;
     }
-  }
-
-  .logout-btn {
-    width: 100%;
-    background: transparent;
-    color: #ff4757;
-    border: 1px solid rgba(255, 71, 87, 0.3);
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logout-btn:hover {
-    background: rgba(255, 71, 87, 0.1);
-    border-color: #ff4757;
   }
 
   @keyframes spin {

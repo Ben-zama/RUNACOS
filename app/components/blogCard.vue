@@ -23,6 +23,8 @@
     
     <p v-if="description">{{ description }}</p>
 
+    <hr>
+
     <div class="card-footer" v-if="author || date">
       <div class="author" v-if="author">
         <i class="bi bi-person-circle"></i>
@@ -83,18 +85,16 @@ defineProps({
   flex-direction: column;
   gap: 15px;
   cursor: pointer;
-  text-decoration: none; /* Just in case nuxt-link adds underlines */
+  text-decoration: none;
   color: inherit;
-  
-  /* Bento Card Base Styles */
   padding: 20px;
   background: linear-gradient(
     145deg,
-    $translucent-alternate-color 0%,
-    $translucent-secondary-color 100%
+    color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+    color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
   );
   backdrop-filter: blur(10px);
-  border: 1px solid $translucent-secondary-color-50;
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-radius: 8px;
   transition: transform 0.3s ease, border-color 0.3s ease;
 
@@ -119,9 +119,8 @@ defineProps({
     
     .tag {
       padding: 4px 10px;
-      /* Matched to the bento form input style */
-      background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent); 
+      border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
       font-family: $alternate-font;
       font-size: $text-sm;
       border-radius: 6px;
@@ -140,7 +139,7 @@ defineProps({
       font-weight: 900;
       line-height: 1.1;
       max-width: 600px;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
+      background: linear-gradient(135deg, var(--text-color), var(--text-gradient-color));
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -159,9 +158,8 @@ defineProps({
       justify-content: center;
       align-items: center;
       border-radius: 50%;
-      /* Matched to bento style */
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent); 
+      border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
       overflow: hidden;
       transition: 0.3s;
       
@@ -176,14 +174,16 @@ defineProps({
     opacity: 0.8;
     margin: 0;
     line-height: 1.5;
-    /* Optional: Truncate description so cards stay relatively uniform */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* --- New Author & Date Footer Styles --- */
+  hr {
+    border-color: color-mix(in srgb, var(--text-color) 20%, transparent);
+  }
+
   .card-footer {
     display: flex;
     justify-content: space-between;
@@ -192,7 +192,7 @@ defineProps({
     flex-wrap: wrap;
     margin-top: auto; /* Pushes to the very bottom */
     padding-top: 15px;
-    border-top: 1px solid $translucent-secondary-color-50;
+    border-top: 1px solid color-mix(in srgb, var(--alternate-color) 50%, transparent);
     font-size: $text-sm;
     font-family: $alternate-font;
     opacity: 0.9;

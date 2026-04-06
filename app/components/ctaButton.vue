@@ -53,8 +53,8 @@ const props = defineProps({
   cursor: pointer;
   align-items: center;
   gap: 8px;
-  background: $secondary-color;
-  color: $background-color;
+  background: var(--text-color);
+  color: var(--background-color);
   border-radius: 10rem;
   font-family: $alternate-font;
   padding: 4px 12px 4px 4px;
@@ -68,8 +68,8 @@ const props = defineProps({
     width: 32px;
     height: 32px;
     position: relative;
-    color: $secondary-color;
-    background: $background-color;
+    color: var(--text-color);
+    background: var(--background-color);
     border-radius: 50%;
     display: grid;
     place-items: center;

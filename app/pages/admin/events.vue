@@ -14,7 +14,10 @@
           @click="eventsStore.fetchEvents"
           :disabled="eventsStore.isLoading"
         >
-          <i class="bi bi-arrow-clockwise" :class="{ spin: eventsStore.isLoading }"></i>
+          <i
+            class="bi bi-arrow-clockwise"
+            :class="{ spin: eventsStore.isLoading }"
+          ></i>
         </button>
       </div>
     </div>
@@ -22,33 +25,48 @@
     <div v-if="eventsStore.error" class="error-alert">
       <i class="bi bi-exclamation-triangle"></i> {{ eventsStore.error }}
     </div>
-    
-    <div v-else-if="eventsStore.isLoading && eventsStore.events.length === 0" class="loading-state">
+
+    <div
+      v-else-if="eventsStore.isLoading && eventsStore.events.length === 0"
+      class="loading-state"
+    >
       <div class="spinner"></div>
       <p>Loading events...</p>
     </div>
-    
+
     <div v-else-if="eventsStore.events.length === 0" class="empty-state">
       <i class="bi bi-calendar-x"></i>
       <p>No events found. Create one to get started!</p>
     </div>
 
     <div v-else class="events-grid">
-      <div v-for="event in eventsStore.events" :key="event.id || event._id" class="event-card">
+      <div
+        v-for="event in eventsStore.events"
+        :key="event.id || event._id"
+        class="event-card"
+      >
         <div v-if="event.fileUrl" class="card-banner">
           <img :src="event.fileUrl" alt="Event Banner" />
         </div>
-        
+
         <div class="card-header">
           <div class="title-group">
             <h3>{{ event.title }}</h3>
             <span class="type-badge">{{ event.eventType }}</span>
           </div>
           <div class="card-actions">
-            <button class="icon-btn edit-btn" @click="openModal(event)" title="Edit Event">
+            <button
+              class="icon-btn edit-btn"
+              @click="openModal(event)"
+              title="Edit Event"
+            >
               <i class="bi bi-pencil-square"></i>
             </button>
-            <button class="icon-btn delete-btn" @click="handleDelete(event.id || event._id)" title="Delete Event">
+            <button
+              class="icon-btn delete-btn"
+              @click="handleDelete(event.id || event._id)"
+              title="Delete Event"
+            >
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -57,40 +75,72 @@
         <div class="card-body">
           <div class="time-block">
             <i class="bi bi-clock-history"></i>
-            <span>{{ new Date(event.eventTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) }}</span>
+            <span>{{
+              new Date(event.eventTime).toLocaleString(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            }}</span>
           </div>
           <p class="description">{{ event.description }}</p>
           <div class="meta-info">
-            <span class="status-badge" :class="event.status">{{ event.status }}</span>
-            <span class="student-id"><i class="bi bi-person-badge"></i> {{ event.studentId }}</span>
+            <span class="status-badge" :class="event.status">{{
+              event.status
+            }}</span>
+            <span class="student-id"
+              ><i class="bi bi-person-badge"></i> {{ event.studentId }}</span
+            >
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
-      <div class="glass-modal">
+      <div class="modal">
         <h3>{{ isEditing ? "Edit Event" : "Create New Event" }}</h3>
 
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label>Event Title *</label>
-            <input v-model="form.title" type="text" class="glass-input" required placeholder="e.g., Tech Symposium 2026" />
+            <input
+              v-model="form.title"
+              type="text"
+              class="glass-input"
+              required
+              placeholder="e.g., Tech Symposium 2026"
+            />
           </div>
 
           <div class="form-group">
             <label>Event Banner Image <span v-if="!isEditing">*</span></label>
-            <input type="file" @change="handleFileUpload" accept="image/*" class="glass-input" :required="!isEditing" />
+            <input
+              type="file"
+              @change="handleFileUpload"
+              accept="image/*"
+              class="glass-input"
+              :required="!isEditing"
+            />
           </div>
 
           <div class="form-row">
             <div class="form-group half">
               <label>Event Type *</label>
-              <input v-model="form.type" type="text" class="glass-input" required placeholder="e.g., Seminar, Social" />
+              <input
+                v-model="form.type"
+                type="text"
+                class="glass-input"
+                required
+                placeholder="e.g., Seminar, Social"
+              />
             </div>
             <div class="form-group half">
               <label>Event Date & Time *</label>
-              <input v-model="form.eventTime" type="datetime-local" class="glass-input" required />
+              <input
+                v-model="form.eventTime"
+                type="datetime-local"
+                class="glass-input"
+                required
+              />
             </div>
           </div>
 
@@ -106,23 +156,46 @@
             </div>
             <div class="form-group half">
               <label>Assigned Student ID *</label>
-              <input v-model="form.studentId" type="text" class="glass-input" required placeholder="e.g., RUN/CSC/..." />
+              <input
+                v-model="form.studentId"
+                type="text"
+                class="glass-input"
+                required
+                placeholder="e.g., RUN/CSC/..."
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label>Description *</label>
-            <textarea v-model="form.description" class="glass-input" rows="3" required></textarea>
+            <textarea
+              v-model="form.description"
+              class="glass-input"
+              rows="3"
+              required
+            ></textarea>
           </div>
 
           <div class="form-group">
             <label>Admin Response / Notes *</label>
-            <textarea v-model="form.response" class="glass-input" rows="2" placeholder="Mandatory notes..." required></textarea>
+            <textarea
+              v-model="form.response"
+              class="glass-input"
+              rows="2"
+              placeholder="Mandatory notes..."
+              required
+            ></textarea>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn-cancel" @click="closeModal">Cancel</button>
-            <button type="submit" class="btn-save" :disabled="eventsStore.isLoading">
+            <button type="button" class="btn-cancel" @click="closeModal">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn-save"
+              :disabled="eventsStore.isLoading"
+            >
               {{ eventsStore.isLoading ? "Saving..." : "Save Event" }}
             </button>
           </div>
@@ -152,7 +225,7 @@ const editingId = ref(null);
 const form = reactive({
   title: "",
   type: "",
-  eventTime: "", 
+  eventTime: "",
   status: "upcoming",
   studentId: "",
   description: "",
@@ -175,7 +248,7 @@ const resetForm = () => {
   editingId.value = null;
 
   // Clear file input manually if it exists
-  if (typeof document !== 'undefined') {
+  if (typeof document !== "undefined") {
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = "";
   }
@@ -209,7 +282,7 @@ const openModal = (event = null) => {
       description: event.description || "",
       description: event.description || "",
       response: event.response || "",
-      imageFile: null, 
+      imageFile: null,
     });
   } else {
     resetForm();
@@ -240,22 +313,21 @@ const handleSubmit = async () => {
         eventType: form.type,
         studentId: form.studentId,
         status: form.status,
-        response: form.response
+        response: form.response,
       };
-      
+
       await eventsStore.updateEvent(editingId.value, jsonPayload);
-      
     } else {
       // Send FormData for POST requests (to support the image upload)
       const formData = new FormData();
       formData.append("title", form.title);
       formData.append("description", form.description);
       formData.append("eventTime", combinedDateTime);
-      formData.append("eventType", form.type); 
+      formData.append("eventType", form.type);
       formData.append("studentId", form.studentId);
       formData.append("status", form.status);
       formData.append("response", form.response);
-      
+
       if (form.imageFile) {
         formData.append("file", form.imageFile);
       }
@@ -266,7 +338,11 @@ const handleSubmit = async () => {
     closeModal();
   } catch (err) {
     console.error(err);
-    alert(`Failed to ${isEditing.value ? "update" : "create"} event. Check console for details.`);
+    alert(
+      `Failed to ${
+        isEditing.value ? "update" : "create"
+      } event. Check console for details.`
+    );
   }
 };
 
@@ -281,128 +357,178 @@ const handleDelete = async (id) => {
 </script>
 
 <style lang="scss" scoped>
-.page-container { display: flex; flex-direction: column; gap: 30px; color: #fff; }
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
 
 .page-header {
-  display: flex; justify-content: space-between; align-items: flex-end;
-  .titles h2 { font-size: 2rem; margin: 0 0 5px 0; }
-  .titles p { color: #8a8a93; margin: 0; }
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  .titles h2 {
+    font-size: 2rem;
+    margin: 0 0 5px 0;
+  }
+  .titles p {
+    color: #8a8a93;
+    margin: 0;
+  }
   .header-actions {
-    display: flex; gap: 10px;
-    .glass-btn {
-      background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer;
-      display: flex; align-items: center; gap: 8px; transition: 0.3s;
-      &:hover { background: rgba(255, 255, 255, 0.2); }
-      &.primary { background: rgba(52, 152, 219, 0.2); border-color: rgba(52, 152, 219, 0.4); color: #3498db; }
-      &.primary:hover { background: rgba(52, 152, 219, 0.3); }
+    display: flex;
+    gap: 10px;
+    .spin {
+      animation: spin 1s linear infinite;
     }
-    .spin { animation: spin 1s linear infinite; }
   }
 }
 
-.events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
 
 .event-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
-  display: flex; flex-direction: column; backdrop-filter: blur(10px);
+  background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
   overflow: hidden;
 
   .card-banner {
-    width: 100%; height: 160px;
-    img { width: 100%; height: 100%; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    width: 100%;
+    height: 250px;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   .card-header {
-    display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 20px 0;
-    .title-group h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
-    .type-badge { font-size: 0.75rem; background: rgba(255, 255, 255, 0.1); padding: 3px 8px; border-radius: 12px; }
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 20px 0;
+    .title-group h3 {
+      margin: 0 0 5px 0;
+      font-size: 1.2rem;
+    }
+    .type-badge {
+      font-size: 0.75rem;
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
     .card-actions {
-      display: flex; gap: 5px;
+      display: flex;
+      gap: 5px;
       .icon-btn {
-        background: transparent; border: none; cursor: pointer; padding: 5px; border-radius: 6px; transition: 0.2s;
-        &.edit-btn { color: #3498db; &:hover { background: rgba(52, 152, 219, 0.1); } }
-        &.delete-btn { color: #ff4757; &:hover { background: rgba(255, 71, 87, 0.1); } }
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 8px;
+        transition: 0.2s;
+        &.edit-btn {
+          color: $accent-color;
+          &:hover {
+            background: rgba($accent-color, 0.1);
+          }
+        }
+        &.delete-btn {
+          color: #ff4757;
+          &:hover {
+            background: rgba(255, 71, 87, 0.1);
+          }
+        }
       }
     }
   }
 
   .card-body {
     padding: 15px 20px 20px;
-    display: flex; flex-direction: column; flex-grow: 1;
-    .time-block { display: flex; align-items: center; gap: 8px; color: #3498db; font-weight: 500; font-size: 0.9rem; margin-bottom: 10px; }
-    .description { color: #ccc; font-size: 0.9rem; line-height: 1.5; margin: 0 0 15px 0; flex-grow: 1; }
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    .time-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: $accent-color;
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    .description {
+      opacity: 0.8;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0 0 15px 0;
+      flex-grow: 1;
+      display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    }
     .meta-info {
-      display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;
-      .student-id { color: #8a8a93; }
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 15px;
+      .student-id {
+        color: #8a8a93;
+      }
       .status-badge {
-        padding: 4px 10px; border-radius: 20px; text-transform: capitalize;
-        &.upcoming { background: rgba(52, 152, 219, 0.2); color: #3498db; }
-        &.ongoing { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-        &.completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
-        &.cancelled { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        padding: 4px 10px;
+        border-radius: 20px;
+        text-transform: capitalize;
+        &.upcoming {
+          background: rgba(52, 152, 219, 0.2);
+          color: #3498db;
+        }
+        &.ongoing {
+          background: rgba(255, 193, 7, 0.2);
+          color: #ffc107;
+        }
+        &.completed {
+          background: rgba(40, 167, 69, 0.2);
+          color: #28a745;
+        }
+        &.cancelled {
+          background: rgba(255, 71, 87, 0.2);
+          color: #ff4757;
+        }
       }
     }
   }
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-  display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px;
-}
-
-.glass-modal {
-  background: linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px;
-  width: 100%; max-width: 600px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-  max-height: 90vh; overflow-y: auto;
-
-  h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.5rem; }
-  .form-row { display: flex; gap: 15px; }
-  .form-group {
-    display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; width: 100%;
-    &.half { flex: 1; }
-    label { font-size: 0.85rem; color: #aaa; }
-    .glass-input {
-      width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff; padding: 12px; border-radius: 8px; outline: none; font-family: inherit;
-      &:focus { border-color: #3498db; }
-      option { background: #1a1a1a; color: #fff; }
-    }
-  }
-
-  .modal-actions {
-    display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;
-    button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; transition: 0.2s; }
-    .btn-cancel { background: transparent; color: #aaa; &:hover { color: #fff; background: rgba(255, 255, 255, 0.05); } }
-    .btn-save {
-      background: #3498db; color: #fff;
-      &:hover:not(:disabled) { background: #2980b9; }
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
-    }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }
-
-.empty-state, .loading-state {
-  text-align: center; padding: 50px; color: #8a8a93;
-  border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px;
-  i { font-size: 3rem; margin-bottom: 10px; opacity: 0.5; }
-}
-
-.error-alert { 
-  text-align: center; padding: 20px; color: #ff4757; 
-  border: 1px solid rgba(255, 71, 87, 0.3); background: rgba(255, 71, 87, 0.05); border-radius: 12px; 
-}
-
-@keyframes spin { 100% { transform: rotate(360deg); } }
 
 @media (max-width: 600px) {
-  .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .glass-modal .form-row { flex-direction: column; gap: 0; }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .glass-modal .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 </style>

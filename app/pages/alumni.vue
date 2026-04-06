@@ -1,7 +1,10 @@
 <template>
   <div id="alumniPage">
     <section class="spotlight">
-      <div v-if="alumniStore.isLoading && spotlights.length === 0" class="loading-state">
+      <div
+        v-if="alumniStore.isLoading && spotlights.length === 0"
+        class="loading-state"
+      >
         <div class="spinner"></div>
         <p>Loading Spotlights...</p>
       </div>
@@ -84,7 +87,9 @@
         <i class="bi bi-people"></i>
         <h3>No alumni found</h3>
         <p>Try adjusting your search or filters.</p>
-        <button class="glass-btn sm mt-3" @click="resetFilters">Clear Filters</button>
+        <button class="glass-btn sm mt-3" @click="resetFilters">
+          Clear Filters
+        </button>
       </div>
 
       <div v-else class="container">
@@ -94,7 +99,9 @@
           :name="alumni.username"
           :year="getYear(alumni.alumniInfo?.graduationYear)"
           :department="alumni.studentInfo?.department || 'N/A'"
-          :image="`https://placehold.co/400x400/151515/8a8a93?text=${alumni.username?.charAt(0).toUpperCase() || 'A'}`"
+          :image="`https://placehold.co/400x400/151515/8a8a93?text=${
+            alumni.username?.charAt(0).toUpperCase() || 'A'
+          }`"
           linkedIn="#"
         />
       </div>
@@ -116,8 +123,8 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Alumni',
-})
+  title: "Alumni",
+});
 
 const alumniStore = useAlumniStore();
 
@@ -135,51 +142,62 @@ const resetFilters = () => {
 // Default Mock Spotlights (Used as fallback if no "Star Alumni" are found in DB)
 const defaultSpotlights = [
   {
-    id: 'mock1',
+    id: "mock1",
     type: "Innovator Spotlight",
     headline: "Building the Future of Fintech",
-    quote: "RUNACOS gave me the foundation to build scalable systems that now power millions of transactions across Africa. The late nights in the lab were worth it.",
+    quote:
+      "RUNACOS gave me the foundation to build scalable systems that now power millions of transactions across Africa. The late nights in the lab were worth it.",
     name: "Sarah Opeyemi",
     role: "Founder & CTO at TechNova",
     department: "Computer Science",
     year: "2019",
-    image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000&auto=format&fit=crop", 
+    image:
+      "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000&auto=format&fit=crop",
     link: "#",
   },
   {
-    id: 'mock2',
+    id: "mock2",
     type: "Academic Spotlight",
     headline: "Pushing the Boundaries of AI",
-    quote: "My journey into deep learning started right here. The theoretical rigor of our curriculum prepared me perfectly for advanced research on the global stage.",
+    quote:
+      "My journey into deep learning started right here. The theoretical rigor of our curriculum prepared me perfectly for advanced research on the global stage.",
     name: "Dr. Femi Olaniyi",
     role: "Lead AI Researcher",
     department: "Information Technology",
     year: "2016",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop", 
+    image:
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop",
     link: "#",
   },
 ];
 
 // Dynamically compute spotlights based on `isStar` flag in the DB
 const spotlights = computed(() => {
-  if (!alumniStore.alumni || alumniStore.alumni.length === 0) return defaultSpotlights;
-  
-  const starAlumni = alumniStore.alumni.filter(a => a.alumniInfo?.isStar);
-  
+  if (!alumniStore.alumni || alumniStore.alumni.length === 0)
+    return defaultSpotlights;
+
+  const starAlumni = alumniStore.alumni.filter((a) => a.alumniInfo?.isStar);
+
   if (starAlumni.length === 0) return defaultSpotlights;
 
-  return starAlumni.map((star, index) => ({
-    id: star.id || star._id,
-    type: "Featured Alumni",
-    headline: star.alumniInfo?.jobTitle || "Making an Impact",
-    quote: `Meet ${star.username}, excelling in their career at ${star.alumniInfo?.currentCompany || 'their current company'}.`,
-    name: star.username,
-    role: star.alumniInfo?.jobTitle || 'Alumni',
-    department: star.studentInfo?.department || 'N/A',
-    year: getYear(star.alumniInfo?.graduationYear),
-    image: `https://placehold.co/1000x600/151515/8a8a93?text=${encodeURIComponent(star.username)}`, // Fallback image placeholder
-    link: "#"
-  })).slice(0, 3); // Max 3 spotlights
+  return starAlumni
+    .map((star, index) => ({
+      id: star.id || star._id,
+      type: "Featured Alumni",
+      headline: star.alumniInfo?.jobTitle || "Making an Impact",
+      quote: `Meet ${star.username}, excelling in their career at ${
+        star.alumniInfo?.currentCompany || "their current company"
+      }.`,
+      name: star.username,
+      role: star.alumniInfo?.jobTitle || "Alumni",
+      department: star.studentInfo?.department || "N/A",
+      year: getYear(star.alumniInfo?.graduationYear),
+      image: `https://placehold.co/1000x600/151515/8a8a93?text=${encodeURIComponent(
+        star.username
+      )}`, // Fallback image placeholder
+      link: "#",
+    }))
+    .slice(0, 3); // Max 3 spotlights
 });
 
 // Slider Logic
@@ -208,11 +226,11 @@ const resetAutoplay = () => {
 
 // Helper to extract year from ISO string
 const getYear = (isoString) => {
-  if (!isoString) return 'N/A';
+  if (!isoString) return "N/A";
   try {
     return new Date(isoString).getFullYear().toString();
   } catch {
-    return 'N/A';
+    return "N/A";
   }
 };
 
@@ -220,21 +238,27 @@ const getYear = (isoString) => {
 const graduationYears = computed(() => {
   if (!alumniStore.alumni) return [];
   const years = alumniStore.alumni
-    .map(a => getYear(a.alumniInfo?.graduationYear))
-    .filter(y => y !== 'N/A');
-  
+    .map((a) => getYear(a.alumniInfo?.graduationYear))
+    .filter((y) => y !== "N/A");
+
   return [...new Set(years)].sort((a, b) => b - a);
 });
 
 // Filter the full alumni list based on search/dropdowns
 const filteredAlumni = computed(() => {
   if (!alumniStore.alumni) return [];
-  
-  return alumniStore.alumni.filter(alumni => {
-    const nameMatch = (alumni.username || "").toLowerCase().includes(searchQuery.value.toLowerCase());
-    const yearMatch = selectedYear.value === "" || getYear(alumni.alumniInfo?.graduationYear) === selectedYear.value;
-    const deptMatch = selectedDept.value === "" || alumni.studentInfo?.department === selectedDept.value;
-    
+
+  return alumniStore.alumni.filter((alumni) => {
+    const nameMatch = (alumni.username || "")
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    const yearMatch =
+      selectedYear.value === "" ||
+      getYear(alumni.alumniInfo?.graduationYear) === selectedYear.value;
+    const deptMatch =
+      selectedDept.value === "" ||
+      alumni.studentInfo?.department === selectedDept.value;
+
     return nameMatch && yearMatch && deptMatch;
   });
 });
@@ -277,31 +301,71 @@ onUnmounted(() => {
   padding: 25px 15px;
   position: relative;
 
-  /* Shared Utility Classes */
-  .loading-state, .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 60px 20px; text-align: center; color: #8a8a93; gap: 15px;
-    background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 16px;
-    i { font-size: 3rem; }
-    h3 { color: #fff; margin: 0; }
-    p { margin: 0; }
+  .loading-state,
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #8a8a93;
+    gap: 15px;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+    );
+    border: 1px dashed color-mix(in srgb, var(--text-color) 20%, transparent);
+    border-radius: 16px;
+    i {
+      font-size: 3rem;
+    }
+    h3,
+    p {
+      margin: 0;
+    }
   }
 
   .spinner {
-    width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.1);
-    border-left-color: $accent-color; border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-left-color: $accent-color;
+    border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 
-  @keyframes spin { 100% { transform: rotate(360deg); } }
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
   .glass-btn {
-    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s;
-    &:hover { background: rgba($accent-color, 0.2); color: $accent-color; border-color: rgba($accent-color, 0.3); }
-    &.sm { padding: 6px 12px; font-size: 0.85rem; }
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    &:hover {
+      background: rgba($accent-color, 0.2);
+      color: $accent-color;
+      border-color: rgba($accent-color, 0.8);
+    }
+    &.sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
   }
-  .mt-3 { margin-top: 15px; }
+  .mt-3 {
+    margin-top: 15px;
+  }
 
   // Spotlight
   .spotlight {
@@ -317,11 +381,10 @@ onUnmounted(() => {
     }
 
     .slider-track {
-      display: grid; // The magic layout trick for crossfading
+      display: grid;
       width: 100%;
     }
 
-    /* --- Vue Transition Classes --- */
     .fade-enter-active,
     .fade-leave-active {
       transition: opacity 0.8s ease, transform 0.8s ease;
@@ -339,11 +402,11 @@ onUnmounted(() => {
       flex-direction: column-reverse;
       background: linear-gradient(
         145deg,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.01) 100%
+        color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
       );
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
       border-radius: 20px;
       overflow: hidden;
       text-align: left;
@@ -374,7 +437,11 @@ onUnmounted(() => {
           font-size: $text-2xl;
           font-weight: 900;
           line-height: 1.2;
-          background: linear-gradient(135deg, #fff, #c1c0c0);
+          background: linear-gradient(
+            135deg,
+            var(--text-color),
+            var(--text-gradient-color)
+          );
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -382,7 +449,7 @@ onUnmounted(() => {
         .quote {
           font-size: $text-lg;
           font-style: italic;
-          color: rgba(255, 255, 255, 0.85);
+          opacity: 0.7;
           line-height: 1.6;
           border-left: 3px solid $accent-color;
           padding-left: 15px;
@@ -396,7 +463,6 @@ onUnmounted(() => {
 
           .name {
             font-size: $text-xl;
-            color: #fff;
             margin: 0;
           }
           .role {
@@ -405,7 +471,7 @@ onUnmounted(() => {
           }
           .dept {
             font-size: $text-sm;
-            color: #8a8a93;
+            opacity: 0.7;
           }
         }
 
@@ -414,7 +480,6 @@ onUnmounted(() => {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          color: #fff;
           text-decoration: none;
           font-weight: 600;
           transition: color 0.3s ease;
@@ -450,7 +515,7 @@ onUnmounted(() => {
           inset: 0;
           background: linear-gradient(
             to top,
-            rgba(0, 0, 0, 0.8) 0%,
+            color-mix(in srgb, var(--alternate-color) 50%, transparent),
             transparent 50%
           );
         }
@@ -468,7 +533,11 @@ onUnmounted(() => {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: color-mix(
+          in srgb,
+          var(--secondary-color) 50%,
+          transparent
+        );
         border: none;
         cursor: pointer;
         padding: 0;
@@ -480,7 +549,11 @@ onUnmounted(() => {
         }
 
         &:hover {
-          background-color: rgba(255, 255, 255, 0.5);
+          background-color: color-mix(
+            in srgb,
+            var(--secondary-color) 80%,
+            transparent
+          );
         }
       }
     }
@@ -496,7 +569,11 @@ onUnmounted(() => {
       font-size: $text-2xl;
       font-weight: 900;
       letter-spacing: 1px;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
+      background: linear-gradient(
+        135deg,
+        var(--text-color),
+        var(--text-gradient-color)
+      );
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -512,10 +589,10 @@ onUnmounted(() => {
       select {
         width: 100%;
         padding: 12px 15px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: color-mix(in srgb, var(--alternate-color) 80%, transparent);
+        border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
+        color: #8a8a93;
         border-radius: 8px;
-        background-color: transparent;
-        color: inherit;
         font-size: 1rem;
         outline: none;
         transition: border-color 0.3s ease;
@@ -535,6 +612,7 @@ onUnmounted(() => {
 
         option {
           color: #000;
+          background: #fff;
         }
       }
 

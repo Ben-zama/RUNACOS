@@ -118,7 +118,7 @@
     </div>
 
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content glass-card">
+      <div class="modal">
         <h3>Edit Alumni Profile</h3>
 
         <form @submit.prevent="submitForm" class="alumni-form">
@@ -361,7 +361,6 @@ const handleDelete = async (id) => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  color: #fff;
 }
 .page-header {
   display: flex;
@@ -381,26 +380,6 @@ const handleDelete = async (id) => {
   }
 }
 
-.glass-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: 0.3s;
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-  &.primary-hover:hover {
-    background: rgba(52, 152, 219, 0.3);
-    border-color: rgba(52, 152, 219, 0.4);
-    color: #3498db;
-  }
-}
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -408,34 +387,11 @@ const handleDelete = async (id) => {
 .table-card {
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  backdrop-filter: blur(10px);
 }
 .table-filters {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
-  .glass-input {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 8px;
-    outline: none;
-    width: 100%;
-    &:focus {
-      border-color: #3b82f6;
-    }
-    &.search-input {
-      flex: 1;
-      max-width: 400px;
-    }
-  }
   select.glass-input {
     max-width: 200px;
     appearance: none;
@@ -447,6 +403,7 @@ const handleDelete = async (id) => {
     padding-right: 30px;
     option {
       color: #000;
+      background: #fff;
     }
   }
 }
@@ -461,14 +418,12 @@ table {
 }
 th {
   padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: #8a8a93;
   font-weight: 500;
   font-size: 0.9rem;
 }
 td {
   padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.95rem;
   vertical-align: middle;
 }
@@ -520,7 +475,7 @@ td {
     padding: 6px;
     border-radius: 6px;
     transition: 0.2s;
-    color: #3498db;
+    color: $accent-color;
     &:hover {
       background: rgba(52, 152, 219, 0.1);
     }
@@ -533,62 +488,6 @@ td {
   }
 }
 
-.empty-state,
-.loading-state,
-.error-alert {
-  text-align: center;
-  padding: 50px;
-  color: #8a8a93;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  margin-top: 20px;
-  i {
-    font-size: 3rem;
-    margin-bottom: 10px;
-    opacity: 0.5;
-  }
-}
-.error-alert {
-  border-color: rgba(255, 71, 87, 0.3);
-  color: #ff4757;
-  background: rgba(255, 71, 87, 0.05);
-  padding: 20px;
-  i {
-    font-size: 1.5rem;
-    margin-bottom: 0;
-    margin-right: 10px;
-    opacity: 1;
-  }
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: $translucent-background-color-50;
-  backdrop-filter: blur(20px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-.modal-content {
-  background: #1e1e24;
-  padding: 30px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-  }
-}
 .alumni-form {
   display: flex;
   flex-direction: column;
@@ -607,16 +506,18 @@ td {
     font-size: 0.85rem;
     color: #8a8a93;
   }
-  .glass-input {
-    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 15px; border-radius: 8px; outline: none; width: 100%;
-    &:focus { border-color: #3b82f6; }
-    &.search-input { flex: 1; max-width: 400px; }
-  }
   select.glass-input {
-    appearance: none; cursor: pointer;
+    appearance: none;
+    cursor: pointer;
     background-image: url('data:image/svg+xml;utf8,<svg fill="%238a8a93" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-    background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; padding-right: 30px;
-    option { color: #000; }
+    background-repeat: no-repeat;
+    background-position-x: 95%;
+    background-position-y: 50%;
+    padding-right: 30px;
+    option {
+      color: #000;
+      background: #fff;
+    }
   }
 }
 .checkbox-group {
@@ -629,12 +530,10 @@ td {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: #fff;
   }
 }
 .divider {
   border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin: 10px 0;
 }
 .modal-actions {
@@ -709,9 +608,7 @@ td {
 
   tr {
     margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.15);
     padding: 5px 10px;
   }
 
@@ -720,7 +617,6 @@ td {
     justify-content: space-between;
     align-items: center;
     text-align: right;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 12px 5px;
     font-size: 0.9rem;
   }

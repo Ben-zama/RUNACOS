@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   app: {
     head: {
@@ -26,7 +26,7 @@ export default defineNuxtConfig({
       },
     },
     plugins: [tailwindcss()],
-    /* server: {
+    /*   server: {
       proxy: {
         "/api": {
           target: "https://runacos-api-889007588961.us-central1.run.app",
@@ -38,6 +38,7 @@ export default defineNuxtConfig({
   }, 
   runtimeConfig: {
     public: {
+      /* apiBase: "/api", */
       apiBase: "https://runacos-api-889007588961.us-central1.run.app",
     },
   },

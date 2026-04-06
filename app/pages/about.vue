@@ -112,16 +112,9 @@
       </div>
     </section>
 
-    <!-- Staff section -->
-    <section class="staff">
-      <h2>Current Faculty Staff</h2>
-      <div class="container">
-        <Carousel :items="team" />
-      </div>
-    </section>
-
     <!-- Executives section -->
     <section class="executives">
+      <div class="pill">Executives</div>
       <h2>2025/2026 Student Executives</h2>
       <div class="container">
         <Carousel :items="team" />
@@ -148,8 +141,8 @@ definePageMeta({
 });
 
 useHead({
-  title: 'About Us',
-})
+  title: "About Us",
+});
 
 const aboutRef = ref(null);
 const aboutPillRef = ref(null);
@@ -240,7 +233,7 @@ const team = ref([
   {
     id: 6,
     name: "Ikeoluwa Ajayi",
-    role: "Treasure",
+    role: "Treasurer",
     badge: "executive",
     image: "/executives/treasurer.webp",
   },
@@ -316,7 +309,6 @@ const team = ref([
   },
 ]);
 
-
 const { stop } = useIntersectionObserver(
   countUpTriggerRef,
   ([{ isIntersecting }]) => {
@@ -343,7 +335,7 @@ const { stop } = useIntersectionObserver(
     gap: 25px;
     .pill {
       width: max-content;
-      background: $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 30%, transparent);
       backdrop-filter: blur(15px);
       padding: 6px 20px;
       border-radius: 30px;
@@ -378,7 +370,7 @@ const { stop } = useIntersectionObserver(
   // Vision & mission
   .vision-mission {
     padding: 50px 15px;
-    background: $alternate-color;
+    background: var(--alternate-color);
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -393,8 +385,8 @@ const { stop } = useIntersectionObserver(
 
       .pill {
         color: $accent-color;
-        background: rgba(255, 255, 255, 0.05); // Subtle background for the pill
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: color-mix(in srgb, var(--secondary-color) 30%, transparent);
+        backdrop-filter: blur(15px);
         padding: 6px 20px;
         border-radius: 30px;
         font-family: $alternate-font;
@@ -406,7 +398,11 @@ const { stop } = useIntersectionObserver(
         font-size: $text-2xl;
         font-weight: 900;
         letter-spacing: 1px;
-        background: linear-gradient(135deg, #fff, #c1c0c0);
+        background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -423,11 +419,11 @@ const { stop } = useIntersectionObserver(
       .card {
         background: linear-gradient(
           145deg,
-          rgba(255, 255, 255, 0.03) 0%,
-          rgba(255, 255, 255, 0.01) 100%
+          color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+          color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
         );
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
         border-radius: 16px;
         padding: 30px 20px;
         display: flex;
@@ -455,8 +451,8 @@ const { stop } = useIntersectionObserver(
           width: 60px;
           height: 60px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: color-mix(in srgb, var(--alternate-color) 50%, transparent);
+          border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -473,7 +469,7 @@ const { stop } = useIntersectionObserver(
           h3 {
             font-family: $alternate-font;
             font-size: $text-xl;
-            color: #fff; // Override the global gradient for better readability inside cards
+            font-weight: bold;
             margin-bottom: 10px;
           }
           p {
@@ -503,8 +499,7 @@ const { stop } = useIntersectionObserver(
 
       .pill {
         color: $accent-color;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: color-mix(in srgb, var(--secondary-color) 30%, transparent);
         padding: 6px 20px;
         border-radius: 30px;
         font-family: $alternate-font;
@@ -516,7 +511,7 @@ const { stop } = useIntersectionObserver(
         font-size: $text-2xl;
         font-weight: 900;
         letter-spacing: 1px;
-        background: linear-gradient(135deg, #fff, #c1c0c0);
+        background: linear-gradient(135deg, var(--text-color), var(--text-gradient-color));
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -661,22 +656,20 @@ const { stop } = useIntersectionObserver(
     }
   }
 
-  // Executives and staff
-  .staff,
+  // Executives
   .executives {
     padding: 25px 15px;
-    background: $secondary-color;
-    color: $background-color;
+    background: var(--secondary-color);
     display: flex;
     flex-direction: column;
     gap: 15px;
     .pill {
       width: max-content;
-      background: $translucent-background-color-50;
+      background: color-mix(in srgb, var(--background-color) 50%, transparent);
       backdrop-filter: blur(15px);
       padding: 6px 20px;
       border-radius: 30px;
-      color: $alternate-color;
+      color: var(--secondary-color);
       font-family: $alternate-font;
       font-size: $text-sm;
       font-weight: 600;
@@ -685,7 +678,7 @@ const { stop } = useIntersectionObserver(
       font-size: $text-2xl;
       font-weight: 900;
       letter-spacing: 1px;
-      background: linear-gradient(135deg, $background-color, #3a3a3a);
+      background: linear-gradient(135deg, var(--alternate-color), var(--reverse-text-gradient-color));
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -762,10 +755,6 @@ const { stop } = useIntersectionObserver(
       .container {
         margin: 0;
       }
-    }
-
-    .staff {
-      padding-bottom: 25px;
     }
   }
 
@@ -876,9 +865,6 @@ const { stop } = useIntersectionObserver(
       .container {
         margin-top: 25px;
       }
-    }
-    .staff {
-      padding-bottom: 25px;
     }
   }
 }

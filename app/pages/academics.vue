@@ -1,92 +1,113 @@
 <template>
   <div id="academicsPage">
-    
     <section class="resources">
       <section class="page-header">
-      <div class="pill">Study Materials</div>
-      <h2>Academic Resources</h2>
-      <p class="subtitle">
-        Access thousands of past questions, lecture notes, and study guides
-        uploaded by faculty and top students to help you ace your exams.
-      </p>
-    </section>
+        <div class="pill">Study Materials</div>
+        <h2>Academic Resources</h2>
+        <p class="subtitle">
+          Access thousands of past questions, lecture notes, and study guides
+          uploaded by faculty and top students to help you ace your exams.
+        </p>
+      </section>
 
-    <section class="filters-section">
-      <div class="glass-card filter-bar">
-        <div class="search-box">
-          <i class="bi bi-search"></i>
-          <input
-            type="search"
-            v-model="searchQuery"
-            placeholder="Search by course code or title..."
-          />
+      <section class="filters-section">
+        <div class="glass-card filter-bar">
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input
+              type="search"
+              v-model="searchQuery"
+              placeholder="Search by course code or title..."
+            />
+          </div>
+
+          <div class="dropdowns">
+            <select v-model="selectedType" class="glass-select">
+              <option value="">All Resource Types</option>
+              <option value="Past Question">Past Questions</option>
+              <option value="Lecture Note">Lecture Notes</option>
+              <option value="Study Material">Study Materials</option>
+            </select>
+          </div>
         </div>
+      </section>
 
-        <div class="dropdowns">
-          <select v-model="selectedType" class="glass-select">
-            <option value="">All Resource Types</option>
-            <option value="Past Question">Past Questions</option>
-            <option value="Lecture Note">Lecture Notes</option>
-            <option value="Study Material">Study Materials</option>
-          </select>
-        </div>
-      </div>
-    </section>
-
-    <section class="resources-section">
-      <div v-if="resourcesStore.error" class="error-alert glass-card" style="margin-bottom: 20px;">
-        <i class="bi bi-exclamation-triangle"></i> {{ resourcesStore.error }}
-      </div>
-
-      <div v-if="resourcesStore.isLoading && resourcesStore.resources.length === 0" class="empty-state glass-card">
-        <div class="spinner" style="margin-bottom: 15px;"></div>
-        <p>Loading academic resources...</p>
-      </div>
-
-      <div v-else-if="filteredResources.length === 0" class="empty-state glass-card">
-        <i class="bi bi-folder-x"></i>
-        <h3>No resources found</h3>
-        <p>We couldn't find any files matching your search criteria.</p>
-        <button class="glass-btn sm" @click="resetFilters">
-          Clear Filters
-        </button>
-      </div>
-
-      <div v-else class="resources-grid">
+      <section class="resources-section">
         <div
-          v-for="file in filteredResources"
-          :key="file.id || file._id"
-          class="glass-card resource-card"
+          v-if="resourcesStore.error"
+          class="error-alert glass-card"
+          style="margin-bottom: 20px"
         >
-          <div class="card-top">
-            <div class="file-icon" :class="getFileFormat(file.fileUrl)">
-              <i v-if="getFileFormat(file.fileUrl) === 'pdf'" class="bi bi-file-earmark-pdf-fill"></i>
-              <i v-else-if="getFileFormat(file.fileUrl) === 'doc'" class="bi bi-file-earmark-word-fill"></i>
-              <i v-else-if="getFileFormat(file.fileUrl) === 'ppt'" class="bi bi-file-earmark-slides-fill"></i>
-              <i v-else class="bi bi-file-earmark-text-fill"></i>
-            </div>
-            <div class="badges">
-              <span class="pill type-pill">{{ file.resourceType }}</span>
-            </div>
-          </div>
+          <i class="bi bi-exclamation-triangle"></i> {{ resourcesStore.error }}
+        </div>
 
-          <div class="card-middle">
-            <span class="course-code">{{ file.courseCode }}</span>
-            <h3 class="file-title">{{ file.title }}</h3>
-            <span class="department">
-              By {{ file.uploadedBy || 'Admin' }} • {{ getYear(file.createdAt) }}
-            </span>
-          </div>
+        <div
+          v-if="
+            resourcesStore.isLoading && resourcesStore.resources.length === 0
+          "
+          class="empty-state glass-card"
+        >
+          <div class="spinner" style="margin-bottom: 15px"></div>
+          <p>Loading academic resources...</p>
+        </div>
 
-          <div class="card-bottom">
-            <span class="file-size">Document</span>
-            <a :href="file.fileUrl" target="_blank" class="download-btn">
-              <i class="bi bi-cloud-download"></i> Download
-            </a>
+        <div
+          v-else-if="filteredResources.length === 0"
+          class="empty-state glass-card"
+        >
+          <i class="bi bi-folder-x"></i>
+          <h3>No resources found</h3>
+          <p>We couldn't find any files matching your search criteria.</p>
+          <button class="glass-btn sm" @click="resetFilters">
+            Clear Filters
+          </button>
+        </div>
+
+        <div v-else class="resources-grid">
+          <div
+            v-for="file in filteredResources"
+            :key="file.id || file._id"
+            class="glass-card resource-card"
+          >
+            <div class="card-top">
+              <div class="file-icon" :class="getFileFormat(file.fileUrl)">
+                <i
+                  v-if="getFileFormat(file.fileUrl) === 'pdf'"
+                  class="bi bi-file-earmark-pdf-fill"
+                ></i>
+                <i
+                  v-else-if="getFileFormat(file.fileUrl) === 'doc'"
+                  class="bi bi-file-earmark-word-fill"
+                ></i>
+                <i
+                  v-else-if="getFileFormat(file.fileUrl) === 'ppt'"
+                  class="bi bi-file-earmark-slides-fill"
+                ></i>
+                <i v-else class="bi bi-file-earmark-text-fill"></i>
+              </div>
+              <div class="badges" v-if="file.resourceType">
+                <span class="pill type-pill">{{ file.resourceType }}</span>
+              </div>
+            </div>
+
+            <div class="card-middle">
+              <span class="course-code">{{ file.courseCode }}</span>
+              <h3 class="file-title">{{ file.title }}</h3>
+              <span class="department">
+                By {{ file.uploadedBy || "Admin" }} •
+                {{ getYear(file.createdAt) }}
+              </span>
+            </div>
+
+            <div class="card-bottom">
+              <span class="file-size">Document</span>
+              <a :href="file.fileUrl" target="_blank" class="download-btn">
+                <i class="bi bi-cloud-download"></i> Download
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
     </section>
 
     <section class="blogs" ref="blogsRef">
@@ -97,7 +118,10 @@
           v-for="post in postsStore.posts"
           :key="post.id || post._id"
           :to="`/posts/${post.id || post._id}`"
-          :imageSrc="post.fileUrl || 'https://placehold.co/600x400/151515/8a8a93?text=Update'"
+          :imageSrc="
+            post.fileUrl ||
+            'https://placehold.co/600x400/151515/8a8a93?text=Update'
+          "
           :tags="['Faculty Update']"
           :title="post.title"
           :description="post.content"
@@ -124,8 +148,8 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Academics',
-})
+  title: "Academics",
+});
 
 const resourcesStore = useResourcesStore();
 const postsStore = usePostsStore();
@@ -145,34 +169,32 @@ onMounted(() => {
   postsStore.fetchPosts();
 });
 
-
-
 // Helper functions for UI mapping
 const getFileFormat = (url) => {
-  if (!url) return 'unknown';
+  if (!url) return "unknown";
   const lowerUrl = url.toLowerCase();
-  if (lowerUrl.endsWith('.pdf')) return 'pdf';
-  if (lowerUrl.endsWith('.doc') || lowerUrl.endsWith('.docx')) return 'doc';
-  if (lowerUrl.endsWith('.ppt') || lowerUrl.endsWith('.pptx')) return 'ppt';
-  return 'unknown';
+  if (lowerUrl.endsWith(".pdf")) return "pdf";
+  if (lowerUrl.endsWith(".doc") || lowerUrl.endsWith(".docx")) return "doc";
+  if (lowerUrl.endsWith(".ppt") || lowerUrl.endsWith(".pptx")) return "ppt";
+  return "unknown";
 };
 
 const getYear = (dateStr) => {
-  if (!dateStr) return 'N/A';
+  if (!dateStr) return "N/A";
   try {
     return new Date(dateStr).getFullYear();
   } catch {
-    return 'N/A';
+    return "N/A";
   }
 };
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "TBA";
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
   } catch {
     return dateStr;
@@ -184,17 +206,17 @@ const filteredResources = computed(() => {
   if (!resourcesStore.resources) return [];
 
   return resourcesStore.resources.filter((file) => {
-    const safeTitle = (file.title || '').toLowerCase();
-    const safeCode = (file.courseCode || '').toLowerCase();
+    const safeTitle = (file.title || "").toLowerCase();
+    const safeCode = (file.courseCode || "").toLowerCase();
     const query = searchQuery.value.toLowerCase();
 
     const matchesSearch = safeTitle.includes(query) || safeCode.includes(query);
-    const matchesType = selectedType.value === "" || file.resourceType === selectedType.value;
+    const matchesType =
+      selectedType.value === "" || file.resourceType === selectedType.value;
 
     return matchesSearch && matchesType;
   });
 });
-
 </script>
 
 <style lang="scss">
@@ -202,11 +224,11 @@ const filteredResources = computed(() => {
 @mixin glass-panel {
   background: linear-gradient(
     145deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.01) 100%
+    color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+    color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
   );
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-radius: 16px;
 }
 
@@ -214,19 +236,23 @@ const filteredResources = computed(() => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  border: 4px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-left-color: #3498db;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
-.error-alert { 
-  text-align: center; 
-  padding: 20px; 
-  color: #ff4757; 
-  border: 1px solid rgba(255, 71, 87, 0.3); 
-  background: rgba(255, 71, 87, 0.05); 
+.error-alert {
+  text-align: center;
+  padding: 20px;
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  background: rgba(255, 71, 87, 0.05);
 }
 
 #academicsPage {
@@ -255,8 +281,8 @@ const filteredResources = computed(() => {
       .pill {
         width: max-content;
         color: $accent-color;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: color-mix(in srgb, var(--secondary-color) 30%, transparent);
+        backdrop-filter: blur(15px);
         padding: 6px 20px;
         border-radius: 30px;
         font-family: $alternate-font;
@@ -268,7 +294,11 @@ const filteredResources = computed(() => {
         font-size: $text-3xl;
         font-weight: 900;
         letter-spacing: 1px;
-        background: linear-gradient(135deg, #fff, #c1c0c0);
+        background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -308,9 +338,14 @@ const filteredResources = computed(() => {
 
           input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: color-mix(
+              in srgb,
+              var(--alternate-color) 80%,
+              transparent
+            );
+            border: 1px solid
+              color-mix(in srgb, var(--text-color) 20%, transparent);
+            color: #8a8a93;
             padding: 12px 15px 12px 40px;
             border-radius: 10px;
             font-size: 1rem;
@@ -333,9 +368,14 @@ const filteredResources = computed(() => {
 
           .glass-select {
             width: 100%;
-            background-color: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: color-mix(
+              in srgb,
+              var(--alternate-color) 80%,
+              transparent
+            );
+            border: 1px solid
+              color-mix(in srgb, var(--text-color) 10%, transparent);
+            color: #8a8a93;
             padding: 12px 15px;
             border-radius: 10px;
             font-size: 1rem;
@@ -352,6 +392,7 @@ const filteredResources = computed(() => {
               border-color: $accent-color;
             }
             option {
+              background: #fff;
               color: #000;
             }
           }
@@ -380,7 +421,6 @@ const filteredResources = computed(() => {
         h3 {
           font-size: 1.5rem;
           margin: 0;
-          color: #fff;
         }
         p {
           color: #8a8a93;
@@ -388,9 +428,14 @@ const filteredResources = computed(() => {
         }
 
         .glass-btn {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #fff;
+          background: color-mix(
+            in srgb,
+            var(--alternate-color) 80%,
+            transparent
+          );
+          border: 1px solid
+            color-mix(in srgb, var(--text-color) 10%, transparent);
+          color: #8a8a93;
           padding: 8px 20px;
           border-radius: 8px;
           cursor: pointer;
@@ -413,18 +458,13 @@ const filteredResources = computed(() => {
           display: flex;
           flex-direction: column;
           gap: 20px;
-          transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+          transition: transform 0.4s ease, border-color 0.4s ease,
+            box-shadow 0.4s ease;
 
           &:hover {
             transform: translateY(-5px);
             border-color: rgba($accent-color, 0.4);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-
-            .download-btn {
-              background: rgba($accent-color, 0.15);
-              color: $accent-color;
-              border-color: rgba($accent-color, 0.3);
-            }
           }
 
           .card-top {
@@ -440,8 +480,11 @@ const filteredResources = computed(() => {
               justify-content: center;
               align-items: center;
               font-size: 1.5rem;
-              background: rgba(255, 255, 255, 0.1); /* fallback */
-              color: #fff;
+              background: color-mix(
+                in srgb,
+                var(--secondary-color) 30%,
+                transparent
+              );
 
               &.pdf {
                 background: rgba(231, 76, 60, 0.15);
@@ -459,11 +502,13 @@ const filteredResources = computed(() => {
 
             .type-pill {
               padding: 4px 12px;
-              font-size: 0.75rem;
-              background: rgba(255, 255, 255, 0.03);
-              border: 1px solid rgba(255, 255, 255, 0.05);
+              background: color-mix(
+                in srgb,
+                var(--secondary-color) 20%,
+                transparent
+              );
+              font-size: $text-sm;
               border-radius: 20px;
-              color: #ccc;
             }
           }
 
@@ -473,7 +518,7 @@ const filteredResources = computed(() => {
             flex-grow: 1;
 
             .course-code {
-              font-size: 0.85rem;
+              font-size: $text-sm;
               font-weight: 700;
               color: $accent-color;
               margin-bottom: 5px;
@@ -482,7 +527,7 @@ const filteredResources = computed(() => {
             .file-title {
               font-size: 1.1rem;
               font-family: $alternate-font;
-              color: #fff;
+              font-weight: bold;
               margin: 0 0 10px 0;
               line-height: 1.4;
             }
@@ -499,7 +544,8 @@ const filteredResources = computed(() => {
             justify-content: space-between;
             align-items: center;
             padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid
+              color-mix(in srgb, var(--text-color) 15%, transparent);
 
             .file-size {
               font-size: 0.85rem;
@@ -510,9 +556,13 @@ const filteredResources = computed(() => {
               display: flex;
               align-items: center;
               gap: 8px;
-              background: rgba(255, 255, 255, 0.03);
-              border: 1px solid rgba(255, 255, 255, 0.08);
-              color: #fff;
+              background: color-mix(
+                in srgb,
+                var(--alternate-color) 30%,
+                transparent
+              );
+              border: 1px solid
+                color-mix(in srgb, var(--text-color) 10%, transparent);
               padding: 8px 16px;
               border-radius: 8px;
               font-size: 0.9rem;
@@ -522,6 +572,16 @@ const filteredResources = computed(() => {
 
               i {
                 font-size: 1.1rem;
+              }
+              &:hover {
+                background: color-mix(
+                  in srgb,
+                  var(--secondary-color) 30%,
+                  transparent
+                );
+                border: 1px solid
+                  color-mix(in srgb, var(--text-color) 10%, transparent);
+                color: $accent-color;
               }
             }
           }
@@ -537,12 +597,12 @@ const filteredResources = computed(() => {
     flex-direction: column;
     align-items: center; // Center items for better desktop flow
     gap: 15px;
-    background: $alternate-color;
+    background: var(--alternate-color);
     width: 100%;
 
     .pill {
       width: max-content;
-      background: $translucent-secondary-color-50;
+      background: color-mix(in srgb, var(--secondary-color) 30%, transparent);
       backdrop-filter: blur(15px);
       padding: 6px 20px;
       border-radius: 30px;
@@ -551,18 +611,19 @@ const filteredResources = computed(() => {
       font-size: $text-sm;
       font-weight: 600;
     }
-
     h2 {
       font-size: $text-2xl;
       font-weight: 900;
       letter-spacing: 1px;
-      background: linear-gradient(135deg, #fff, #c1c0c0);
+      background: linear-gradient(
+        135deg,
+        var(--text-color),
+        var(--text-gradient-color)
+      );
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       color: transparent;
-      text-align: center;
-      margin-bottom: 10px;
     }
 
     .container {

@@ -8,9 +8,13 @@
         </div>
 
         <div class="bottom">
-          <a v-for="link in item.links" :key="link.label" :href="link.url" target="_blank">{{
-            link.label
-          }}</a>
+          <a
+            v-for="link in item.links"
+            :key="link.label"
+            :href="link.url"
+            target="_blank"
+            >{{ link.label }}</a
+          >
         </div>
       </div>
     </section>
@@ -21,33 +25,62 @@
         <div class="span">
           <div class="input-control">
             <label for="title">Fault Title</label>
-            <input id="title" v-model="form.title" type="text" placeholder="e.g., Broken projector in Room 2" required />
+            <input
+              id="title"
+              v-model="form.title"
+              type="text"
+              placeholder="e.g., Broken projector in Room 2"
+              required
+            />
           </div>
 
           <div class="input-control">
             <label for="studentId">Matric No.</label>
-            <input id="studentId" v-model="form.studentId" type="text" placeholder="RUN/CMP/..." required />
+            <input
+              id="studentId"
+              v-model="form.studentId"
+              type="text"
+              placeholder="RUN/CMP/..."
+              required
+            />
           </div>
         </div>
 
         <div class="textarea-control">
           <label for="description">Message/Description</label>
-          <textarea id="description" v-model="form.description" placeholder="Describe the issue in detail..." required />
+          <textarea
+            id="description"
+            v-model="form.description"
+            placeholder="Describe the issue in detail..."
+            required
+          />
         </div>
-        
-        <p v-if="faultsStore.error" style="color: #ff4757; font-size: 0.9rem; margin: 0;">
+
+        <p
+          v-if="faultsStore.error"
+          style="color: #ff4757; font-size: 0.9rem; margin: 0"
+        >
           <i class="bi bi-exclamation-circle"></i> {{ faultsStore.error }}
         </p>
 
-        <button type="submit" :disabled="faultsStore.isLoading" style="background: transparent; border: none; padding: 0; cursor: pointer;">
-           <ctaButton 
-             :buttonLabel="faultsStore.isLoading ? 'Sending...' : 'Report fault'" 
-             link="" 
-             :style="{ opacity: faultsStore.isLoading ? 0.7 : 1 }"
-           />
+        <button
+          type="submit"
+          :disabled="faultsStore.isLoading"
+          style="
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+          "
+        >
+          <ctaButton
+            :buttonLabel="faultsStore.isLoading ? 'Sending...' : 'Report fault'"
+            link=""
+            :style="{ opacity: faultsStore.isLoading ? 0.7 : 1 }"
+          />
         </button>
       </form>
-      
+
       <div class="map">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1715.1309670264927!2d4.4566802135541845!3d7.681308157424518!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10382bf4cfc23a5d%3A0xdc6c4b4c1b582ddf!2sRedeemer's%20University%20Ede!5e0!3m2!1sen!2sng!4v1774012336503!5m2!1sen!2sng"
@@ -77,8 +110,8 @@ definePageMeta({
 });
 
 useHead({
-  title: 'Contact Us',
-})
+  title: "Contact Us",
+});
 
 const faultsStore = useFaultsStore();
 
@@ -86,7 +119,7 @@ const faultsStore = useFaultsStore();
 const form = reactive({
   title: "",
   studentId: "",
-  description: ""
+  description: "",
 });
 
 const handleFaultSubmit = async () => {
@@ -97,17 +130,16 @@ const handleFaultSubmit = async () => {
       studentId: form.studentId,
       description: form.description,
       status: "in-progress", // Ignored by UI, required by API
-      response: "Pending admin review" // Ignored by UI, required by API
+      response: "Pending admin review", // Ignored by UI, required by API
     };
 
     await faultsStore.submitFault(payload);
-    
+
     alert("Fault reported successfully!");
-    
+
     form.title = "";
     form.studentId = "";
     form.description = "";
-
   } catch (error) {
     console.error("Failed to submit fault report", error);
   }
@@ -125,24 +157,40 @@ const contactPage = [
   {
     text: "Send an email",
     icon: "bi bi-envelope",
-    links: [{ url: "mailto:Runacosssocial@gmail.com", label: "Runacosssocial@gmail.com" }],
+    links: [
+      {
+        url: "mailto:Runacosssocial@gmail.com",
+        label: "Runacosssocial@gmail.com",
+      },
+    ],
   },
   {
     text: "Pay a visit",
     icon: "bi bi-geo-alt",
-    links: [{ url: "https://maps.app.goo.gl/eG3mAH9n9Kn7Jmuj6", label: "P.M.B 230, Ede, Osun State, Nigeria" }],
+    links: [
+      {
+        url: "https://maps.app.goo.gl/eG3mAH9n9Kn7Jmuj6",
+        label: "P.M.B 230, Ede, Osun State, Nigeria",
+      },
+    ],
   },
   {
     text: "Connect on Linkedin",
     icon: "bi bi-linkedin",
     links: [
-      { url: "https://www.linkedin.com/company/runacos", label: "Redeemer's University Association of Computing Students (RUNACOS)" },
+      {
+        url: "https://www.linkedin.com/company/runacos",
+        label:
+          "Redeemer's University Association of Computing Students (RUNACOS)",
+      },
     ],
   },
   {
     text: "Follow on Instagram",
     icon: "bi bi-instagram",
-    links: [{ url: "https://www.instagram.com/the_runacos", label: "@the_runacos" }],
+    links: [
+      { url: "https://www.instagram.com/the_runacos", label: "@the_runacos" },
+    ],
   },
   {
     text: "Follow on Tiktok",
@@ -174,11 +222,11 @@ const contactPage = [
       gap: 15px;
       background: linear-gradient(
         145deg,
-        $translucent-alternate-color 0%,
-        $translucent-secondary-color 100%
+        color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
       );
       backdrop-filter: blur(10px);
-      border: 1px solid $translucent-secondary-color-50;
+      border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
       border-radius: 8px;
 
       .top {
@@ -216,7 +264,6 @@ const contactPage = [
     gap: 25px;
 
     form {
-      /* Matching Bento Box Styles */
       padding: 25px;
       display: flex;
       flex-direction: column;
@@ -224,11 +271,11 @@ const contactPage = [
       gap: 20px;
       background: linear-gradient(
         145deg,
-        $translucent-alternate-color 0%,
-        $translucent-secondary-color 100%
+        color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
       );
       backdrop-filter: blur(10px);
-      border: 1px solid $translucent-secondary-color-50;
+      border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
       border-radius: 8px;
 
       h3 {
@@ -258,8 +305,14 @@ const contactPage = [
           width: 100%;
           padding: 12px 15px;
           border-radius: 6px;
-          border: 1px solid $translucent-secondary-color-50;
-          background: rgba(255, 255, 255, 0.05);
+          background: color-mix(
+            in srgb,
+            var(--alternate-color) 50%,
+            transparent
+          );
+          border: 1px solid
+            color-mix(in srgb, var(--text-color) 20%, transparent);
+          color: #8a8a93;
           color: inherit;
           outline: none;
           font-family: inherit;

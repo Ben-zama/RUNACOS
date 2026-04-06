@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-container">
-    
     <div class="page-header">
       <div class="titles">
         <h2>Dashboard Overview</h2>
@@ -9,7 +8,11 @@
     </div>
 
     <div class="kpi-row">
-      <div class="glass-card kpi-card" v-for="stat in computedStats" :key="stat.title">
+      <div
+        class="glass-card kpi-card"
+        v-for="stat in computedStats"
+        :key="stat.title"
+      >
         <div class="icon-wrapper" :class="stat.colorClass">
           <i :class="stat.icon"></i>
         </div>
@@ -24,17 +27,23 @@
     </div>
 
     <div class="middle-row">
-      
       <div class="glass-card table-card resources-panel">
         <div class="card-header">
           <div>
             <h3>Recent Academic Resources</h3>
             <p class="subtitle">Latest study materials uploaded</p>
           </div>
-          <NuxtLink to="/admin/resources" class="view-all glass-btn sm">View All</NuxtLink>
+          <NuxtLink to="/admin/resources" class="view-all glass-btn sm"
+            >View All</NuxtLink
+          >
         </div>
-        
-        <div v-if="resourcesStore.isLoading && resourcesStore.resources.length === 0" class="empty-state">
+
+        <div
+          v-if="
+            resourcesStore.isLoading && resourcesStore.resources.length === 0
+          "
+          class="empty-state"
+        >
           <span class="spinner"></span>
         </div>
         <div v-else-if="recentResources.length === 0" class="empty-state">
@@ -53,8 +62,10 @@
               <tr v-for="res in recentResources" :key="res.id || res._id">
                 <td class="highlight">
                   <div class="cell-content">
-                    <span class="font-bold">{{ res.title || 'Untitled' }}</span>
-                    <span class="text-xs text-gray-400">{{ res.courseCode }}</span>
+                    <span class="font-bold">{{ res.title || "Untitled" }}</span>
+                    <span class="text-xs text-gray-400">{{
+                      res.courseCode
+                    }}</span>
                   </div>
                 </td>
                 <td class="desktop-only">
@@ -68,7 +79,6 @@
       </div>
 
       <div class="right-column">
-        
         <div class="glass-card actions-panel">
           <h3>Quick Links</h3>
           <div class="action-grid">
@@ -99,28 +109,36 @@
           <div class="event-details">
             <h4>{{ nextUpcomingEvent.title }}</h4>
             <div class="meta">
-              <span><i class="bi bi-calendar"></i> {{ formatDate(nextUpcomingEvent.eventTime) }}</span>
-              <span><i class="bi bi-geo-alt"></i> {{ nextUpcomingEvent.eventType || 'Campus' }}</span>
+              <span
+                ><i class="bi bi-calendar"></i>
+                {{ formatDate(nextUpcomingEvent.eventTime) }}</span
+              >
+              <span
+                ><i class="bi bi-geo-alt"></i>
+                {{ nextUpcomingEvent.eventType || "Campus" }}</span
+              >
             </div>
           </div>
-          <NuxtLink to="/admin/events" class="glass-btn primary-hover w-full center">
+          <NuxtLink
+            to="/admin/events"
+            class="glass-btn primary-hover w-full center"
+          >
             Manage Event
           </NuxtLink>
         </div>
-        
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useUsersStore } from '~/stores/useUsersStore';
-import { useResourcesStore } from '~/stores/useResourcesStore';
-import { useEventsStore } from '~/stores/useEventsStore';
-import { usePostsStore } from '~/stores/usePostsStore';
+import { computed, onMounted } from "vue";
+import { useUsersStore } from "~/stores/useUsersStore";
+import { useResourcesStore } from "~/stores/useResourcesStore";
+import { useEventsStore } from "~/stores/useEventsStore";
+import { usePostsStore } from "~/stores/usePostsStore";
 
-definePageMeta({ layout: 'admin', middleware: 'admin' });
+definePageMeta({ layout: "admin", middleware: "admin" });
 
 // Initialize all stores
 const usersStore = useUsersStore();
@@ -137,35 +155,41 @@ onMounted(() => {
 });
 
 const isLoadingAny = computed(() => {
-  return usersStore.isLoading || resourcesStore.isLoading || eventsStore.isLoading || postsStore.isLoading;
+  return (
+    usersStore.isLoading ||
+    resourcesStore.isLoading ||
+    eventsStore.isLoading ||
+    postsStore.isLoading
+  );
 });
 
 // Dynamic KPIs based on real data
 const computedStats = computed(() => [
-  { 
-    title: "Registered Users", 
-    value: usersStore.users?.length || 0, 
+  {
+    title: "Registered Users",
+    value: usersStore.users?.length || 0,
     icon: "bi bi-mortarboard-fill",
-    colorClass: "blue-theme"
+    colorClass: "blue-theme",
   },
-  { 
-    title: "Total Resources", 
-    value: resourcesStore.resources?.length || 0, 
+  {
+    title: "Total Resources",
+    value: resourcesStore.resources?.length || 0,
     icon: "bi bi-file-earmark-text-fill",
-    colorClass: "green-theme"
+    colorClass: "green-theme",
   },
-  { 
-    title: "Upcoming Events", 
-    value: eventsStore.events?.filter(e => e.status === 'upcoming').length || 0, 
+  {
+    title: "Upcoming Events",
+    value:
+      eventsStore.events?.filter((e) => e.status === "upcoming").length || 0,
     icon: "bi bi-calendar-event-fill",
-    colorClass: "purple-theme"
+    colorClass: "purple-theme",
   },
-  { 
-    title: "Published Posts", 
-    value: postsStore.posts?.length || 0, 
+  {
+    title: "Published Posts",
+    value: postsStore.posts?.length || 0,
     icon: "bi bi-journal-richtext",
-    colorClass: "orange-theme"
-  }
+    colorClass: "orange-theme",
+  },
 ]);
 
 // Get the 4 most recently added resources
@@ -178,9 +202,9 @@ const recentResources = computed(() => {
 // Find the closest upcoming event
 const nextUpcomingEvent = computed(() => {
   if (!eventsStore.events) return null;
-  const upcoming = eventsStore.events.filter(e => e.status === 'upcoming');
+  const upcoming = eventsStore.events.filter((e) => e.status === "upcoming");
   if (upcoming.length === 0) return null;
-  
+
   // Sort by closest date
   upcoming.sort((a, b) => new Date(a.eventTime) - new Date(b.eventTime));
   return upcoming[0];
@@ -190,7 +214,11 @@ const nextUpcomingEvent = computed(() => {
 const formatDate = (dateStr) => {
   if (!dateStr) return "N/A";
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   } catch {
     return dateStr;
   }
@@ -202,31 +230,22 @@ const formatDate = (dateStr) => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  color: #fff;
 }
 
 .page-header {
-  .titles h2 { font-size: 2rem; margin: 0 0 5px 0; }
-  .titles p { color: #8a8a93; margin: 0; }
+  .titles h2 {
+    font-size: 2rem;
+    margin: 0 0 5px 0;
+  }
+  .titles p {
+    color: #8a8a93;
+    margin: 0;
+  }
 }
 
-.glass-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 25px;
-  backdrop-filter: blur(10px);
+.w-full {
+  width: 100%;
 }
-
-.glass-btn {
-  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-decoration: none;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
-  &.sm { padding: 6px 14px; font-size: 0.85rem; }
-  &:hover { background: rgba(255, 255, 255, 0.2); }
-  &.primary-hover:hover { background: rgba(52, 152, 219, 0.3); border-color: rgba(52, 152, 219, 0.4); color: #3498db; }
-}
-.w-full { width: 100%; }
 
 /* KPI Row */
 .kpi-row {
@@ -239,21 +258,53 @@ const formatDate = (dateStr) => {
   align-items: center;
   gap: 20px;
   padding: 20px;
-  
+
   .icon-wrapper {
-    width: 55px; height: 55px; border-radius: 14px;
-    display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
-    
-    &.blue-theme { background: rgba(52, 152, 219, 0.15); color: #3498db; }
-    &.green-theme { background: rgba(46, 213, 115, 0.15); color: #2ed573; }
-    &.purple-theme { background: rgba(155, 89, 182, 0.15); color: #9b59b6; }
-    &.orange-theme { background: rgba(255, 165, 2, 0.15); color: #ffa502; }
+    width: 55px;
+    height: 55px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+
+    &.blue-theme {
+      background: rgba(52, 152, 219, 0.15);
+      color: #3498db;
+    }
+    &.green-theme {
+      background: rgba(46, 213, 115, 0.15);
+      color: #2ed573;
+    }
+    &.purple-theme {
+      background: rgba(155, 89, 182, 0.15);
+      color: #9b59b6;
+    }
+    &.orange-theme {
+      background: rgba(255, 165, 2, 0.15);
+      color: #ffa502;
+    }
   }
-  
+
   .kpi-info {
-    display: flex; flex-direction: column; gap: 4px;
-    .label { color: #8a8a93; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .value { margin: 0; font-size: 1.8rem; font-weight: 800; display: flex; align-items: center; height: 35px; }
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    .label {
+      color: #8a8a93;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .value {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      height: 35px;
+    }
   }
 }
 
@@ -271,84 +322,195 @@ const formatDate = (dateStr) => {
 
 /* Tables */
 .card-header {
-  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;
-  h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
-  .subtitle { margin: 0; font-size: 0.85rem; color: #8a8a93; }
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
+  }
+  .subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #8a8a93;
+  }
 }
-.table-responsive { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; text-align: left; }
-th { padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #8a8a93; font-weight: 500; font-size: 0.85rem; }
-td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.9rem; vertical-align: middle; }
-.cell-content { display: flex; flex-direction: column; gap: 4px; }
-.font-bold { font-weight: 600; color: #fff; }
-.text-xs { font-size: 0.75rem; }
-.text-gray-400 { color: #9ca3af; }
-.pill { background: rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; }
+.table-responsive {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  padding: 12px 15px;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+td {
+  padding: 15px;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.font-bold {
+  font-weight: 600;
+}
+.text-xs {
+  font-size: 0.75rem;
+}
+
 
 /* Action Grid */
-.actions-panel h3 { margin: 0 0 20px 0; font-size: 1.2rem; }
+.actions-panel h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+}
 .action-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
-  
+
   .action-box {
-    background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px; padding: 20px 15px; text-align: center; text-decoration: none;
-    display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.3s;
-    
-    span { color: #fff; font-size: 0.85rem; font-weight: 500; }
-    i { font-size: 1.5rem; }
-    
-    .text-blue { color: #3498db; }
-    .text-green { color: #2ed573; }
-    .text-purple { color: #9b59b6; }
-    .text-orange { color: #ffa502; }
-    
-    &:hover { background: rgba(255, 255, 255, 0.05); transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.2); }
+    background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    border-radius: 12px;
+    padding: 20px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+
+    span {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    i {
+      font-size: 1.5rem;
+    }
+
+    .text-blue {
+      color: #3498db;
+    }
+    .text-green {
+      color: #2ed573;
+    }
+    .text-purple {
+      color: #9b59b6;
+    }
+    .text-orange {
+      color: #ffa502;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--secondary-color) 50%, transparent);
+      border-color: color-mix(in srgb, var(--text-color) 50%, transparent);
+      transform: translateY(-3px);
+    }
   }
 }
 
 /* Next Event Widget */
 .next-event-panel {
-  background: linear-gradient(145deg, rgba(52, 152, 219, 0.1) 0%, rgba(30, 30, 30, 0.5) 100%);
-  border-color: rgba(52, 152, 219, 0.2);
-  
+
   .panel-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-    h3 { margin: 0; font-size: 1.1rem; }
-    .pulse-badge { 
-      background: rgba(231, 76, 60, 0.2); color: #e74c3c; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .pulse-badge {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
       animation: pulse 2s infinite;
     }
   }
-  
+
   .event-details {
     margin-bottom: 25px;
-    h4 { margin: 0 0 10px 0; font-size: 1.3rem; color: #fff; }
-    .meta { display: flex; flex-direction: column; gap: 8px; color: #ccc; font-size: 0.9rem; i { color: #3498db; margin-right: 5px; } }
+    h4 {
+      margin: 0 0 10px 0;
+      font-size: 1.3rem;
+    }
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0.8;
+      font-size: 0.9rem;
+      i {
+        color: $accent-color;
+        margin-right: 5px;
+      }
+    }
+  }
+
+  .glass-btn {
+        background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   }
 }
 
-.empty-state { padding: 40px; text-align: center; color: #8a8a93; }
-.spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-left-color: #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
-.spinner-small { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-
-@keyframes spin { 100% { transform: rotate(360deg); } }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(231, 76, 60, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+  }
+}
 
 /* Responsiveness */
 @media (max-width: 1200px) {
-  .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .middle-row { grid-template-columns: 1fr; }
-  .right-column { flex-direction: row; }
-  .actions-panel, .next-event-panel { flex: 1; }
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .middle-row {
+    grid-template-columns: 1fr;
+  }
+  .right-column {
+    flex-direction: row;
+  }
+  .actions-panel,
+  .next-event-panel {
+    flex: 1;
+  }
 }
 @media (max-width: 768px) {
-  .right-column { flex-direction: column; }
-  .desktop-only { display: none; }
+  .right-column {
+    flex-direction: column;
+  }
+  .desktop-only {
+    display: none;
+  }
 }
 @media (max-width: 480px) {
-  .kpi-row { grid-template-columns: 1fr; }
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
