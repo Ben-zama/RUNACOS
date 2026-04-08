@@ -6,173 +6,183 @@
         <p>Manage your faculty blog posts, news, and announcements.</p>
       </div>
       <div class="header-actions">
-        <button class="glass-btn primary-hover" @click="openModal()">
-          <i class="bi bi-pencil-square"></i> Draft New Post
-        </button>
-        <button
-          class="glass-btn refresh-btn"
+        <Button 
+          label="Draft New Post" 
+          icon="bi bi-pencil-square" 
+          class="glass-action-btn primary-hover" 
+          @click="openModal()" 
+        />
+        <Button
+          icon="bi bi-arrow-clockwise"
+          class="p-button-rounded glass-action-btn"
           @click="postsStore.fetchPosts"
           :disabled="postsStore.isLoading"
-        >
-          <i
-            class="bi bi-arrow-clockwise"
-            :class="{ spin: postsStore.isLoading }"
-          ></i>
-        </button>
+          :class="{ 'spin-icon': postsStore.isLoading }"
+          aria-label="Refresh"
+        />
       </div>
     </div>
 
     <div v-if="postsStore.error" class="error-alert">
       <i class="bi bi-exclamation-triangle"></i> {{ postsStore.error }}
     </div>
-    <div
-      v-else-if="postsStore.isLoading && postsStore.posts.length === 0"
-      class="loading-state"
+
+    <div class="glass-card table-card">
+      
+      <DataTable
+        :value="postsStore.posts"
+        :loading="postsStore.isLoading"
+        responsiveLayout="scroll"
+        class="glass-datatable"
+        paginator
+        :rows="10"
+        :rowsPerPageOptions="[10, 20, 50]"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} posts"
+      >
+        <template #loading>
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading posts...</p>
+          </div>
+        </template>
+
+        <template #empty>
+          <div class="empty-state">
+            <i class="bi bi-journal-x"></i>
+            <p>No posts found. Start drafting!</p>
+          </div>
+        </template>
+
+        <Column field="title" header="Headline">
+          <template #body="{ data }">
+            <div class="cell-content highlight">
+              <span class="headline-text">{{ data.title }}</span>
+              <div class="mobile-only text-xs text-gray-400 mt-1">
+                {{ formatDate(data.createdAt) }} • By {{ data.authorName }}
+              </div>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="authorName" header="Author" class="desktop-only"></Column>
+
+        <Column field="createdAt" header="Date Posted" class="desktop-only">
+          <template #body="{ data }">
+            {{ formatDate(data.createdAt) }}
+          </template>
+        </Column>
+
+        <Column header="Actions" :exportable="false" style="min-width: 10rem">
+          <template #body="{ data }">
+            <div class="actions-cell">
+              <a
+                v-if="data.fileUrl"
+                :href="data.fileUrl"
+                target="_blank"
+                class="p-button p-button-rounded p-button-text action-btn text-info"
+                title="View Media"
+              >
+                <i class="bi bi-image"></i>
+              </a>
+              <Button
+                icon="bi bi-pencil"
+                class="p-button-rounded p-button-text action-btn"
+                @click="openModal(data)"
+                title="Edit Post"
+              />
+              <Button
+                icon="bi bi-trash"
+                class="p-button-rounded p-button-text action-btn danger"
+                @click="handleDelete(data.id || data._id)"
+                title="Delete Post"
+              />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
+
+    <Dialog
+      v-model:visible="isModalOpen"
+      :header="isEditing ? 'Edit Post' : 'Draft New Post'"
+      :modal="true"
+      :style="{ width: '100%', maxWidth: '600px' }"
+      class="glass-dialog"
+      :closable="false"
     >
-      <div class="spinner"></div>
-      <p>Loading posts...</p>
-    </div>
-    <div v-else-if="postsStore.posts.length === 0" class="empty-state">
-      <i class="bi bi-journal-x"></i>
-      <p>No posts found. Start drafting!</p>
-    </div>
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group mt-3">
+          <label>Headline / Title *</label>
+          <InputText
+            v-model="form.title"
+            class="glass-input w-full"
+            required
+            placeholder="e.g., Upcoming Tech Symposium"
+          />
+        </div>
 
-    <div v-else class="glass-card table-card">
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Headline</th>
-              <th class="desktop-only">Author</th>
-              <th class="desktop-only">Date Posted</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="post in postsStore.posts" :key="post.id || post._id">
-              <td data-label="Headline" class="title-cell highlight">
-                <div class="cell-content">
-                  <span class="headline-text">{{ post.title }}</span>
-                  <div class="mobile-only text-xs text-gray-400 mt-1">
-                    {{ formatDate(post.createdAt) }} • By {{ post.authorName }}
-                  </div>
-                </div>
-              </td>
-              <td data-label="Author" class="desktop-only">
-                {{ post.authorName }}
-              </td>
-              <td data-label="Date Posted" class="desktop-only">
-                {{ formatDate(post.createdAt) }}
-              </td>
-              <td data-label="Actions" class="actions-cell">
-                <div class="action-buttons">
-                  <a
-                    v-if="post.fileUrl"
-                    :href="post.fileUrl"
-                    target="_blank"
-                    class="action-btn"
-                    title="View Media"
-                  >
-                    <i class="bi bi-image"></i>
-                  </a>
-                  <button
-                    class="action-btn"
-                    @click="openModal(post)"
-                    title="Edit Post"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    class="action-btn danger"
-                    @click="handleDelete(post.id || post._id)"
-                    title="Delete Post"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <div class="form-group">
+          <label>Post Banner Image <span v-if="!isEditing">*</span></label>
+          <input
+            type="file"
+            @change="handleFileUpload"
+            accept="image/*"
+            class="glass-input w-full file-input"
+            :required="!isEditing"
+          />
+        </div>
 
-    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
-      <div class="modal">
-        <h3>{{ isEditing ? "Edit Post" : "Draft New Post" }}</h3>
-
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>Headline / Title *</label>
-            <input
-              v-model="form.title"
-              type="text"
-              class="glass-input"
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Author Name *</label>
+            <InputText
+              v-model="form.authorName"
+              class="glass-input w-full"
               required
-              placeholder="e.g., Upcoming Tech Symposium"
+              placeholder="e.g., John Doe"
             />
           </div>
-
-          <div class="form-group">
-            <label>Post Banner Image <span v-if="!isEditing">*</span></label>
-            <input
-              type="file"
-              @change="handleFileUpload"
-              accept="image/*"
-              class="glass-input"
-              :required="!isEditing"
+          <div class="form-group half">
+            <label>Author ID *</label>
+            <InputText
+              v-model="form.authorId"
+              class="glass-input w-full"
+              required
+              placeholder="e.g., admin-01"
             />
           </div>
+        </div>
 
-          <div class="form-row">
-            <div class="form-group half">
-              <label>Author Name *</label>
-              <input
-                v-model="form.authorName"
-                type="text"
-                class="glass-input"
-                required
-                placeholder="e.g., John Doe"
-              />
-            </div>
-            <div class="form-group half">
-              <label>Author ID *</label>
-              <input
-                v-model="form.authorId"
-                type="text"
-                class="glass-input"
-                required
-                placeholder="e.g., admin-01"
-              />
-            </div>
-          </div>
+        <div class="form-group">
+          <label>Content *</label>
+          <Textarea
+            v-model="form.content"
+            class="glass-input w-full"
+            rows="6"
+            required
+            placeholder="Write your post content here..."
+            autoResize
+          />
+        </div>
 
-          <div class="form-group">
-            <label>Content *</label>
-            <textarea
-              v-model="form.content"
-              class="glass-input"
-              rows="6"
-              required
-              placeholder="Write your post content here..."
-            ></textarea>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="btn-cancel" @click="closeModal">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn-save"
-              :disabled="postsStore.isLoading"
-            >
-              {{ postsStore.isLoading ? "Saving..." : "Save Post" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div class="modal-actions">
+          <Button
+            label="Cancel"
+            icon="bi bi-x"
+            class="p-button-text btn-cancel"
+            @click="closeModal"
+          />
+          <Button
+            type="submit"
+            :label="postsStore.isLoading ? 'Saving...' : 'Save Post'"
+            icon="bi bi-check"
+            class="btn-save"
+            :loading="postsStore.isLoading"
+          />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
@@ -293,9 +303,7 @@ const handleSubmit = async () => {
   } catch (err) {
     console.error(err);
     alert(
-      `Failed to ${
-        isEditing.value ? "update" : "create"
-      } post. Check console for details.`
+      `Failed to ${isEditing.value ? "update" : "create"} post. Check console for details.`
     );
   }
 };
@@ -311,10 +319,8 @@ const handleDelete = async (id) => {
 </script>
 
 <style lang="scss" scoped>
-/* Box Sizing Reset to ensure padding doesn't overflow widths */
-*,
-*::before,
-*::after {
+/* Box Sizing Reset */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
@@ -323,10 +329,12 @@ const handleDelete = async (id) => {
   flex-direction: column;
   gap: 30px;
 }
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  
   .titles h2 {
     font-size: 2rem;
     margin: 0 0 5px 0;
@@ -338,97 +346,205 @@ const handleDelete = async (id) => {
   .header-actions {
     display: flex;
     gap: 10px;
-  }
-}
 
-/* Table Styles */
-.table-card {
-  padding: 20px;
-  border-radius: 12px;
-}
-.table-responsive {
-  overflow-x: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-th {
-  padding: 15px;
-  color: #8a8a93;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-td {
-  padding: 15px;
-  font-size: 0.95rem;
-  vertical-align: middle;
-}
-.title-cell {
-  font-weight: 500;
-}
-.mobile-only {
-  display: none;
-}
-.text-xs {
-  font-size: 0.75rem;
-}
-.text-gray-400 {
-  color: #9ca3af;
-}
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-/* Desktop Wrappers */
-.cell-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.action-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  transition: 0.2s;
-  color: #3498db;
-  &:hover {
-    background: rgba(52, 152, 219, 0.1);
-  }
-  &.danger {
-    color: #ff4757;
-    &:hover {
-      background: rgba(255, 71, 87, 0.1);
+    .spin-icon :deep(span.p-button-icon) {
+      animation: spin 1s linear infinite;
     }
   }
 }
 
+.table-card {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+/* Glass Input Override */
+.glass-input {
+  background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+  padding: 10px 15px;
+  border-radius: 8px;
+  outline: none;
+  color: var(--text-color);
+  font-family: inherit;
+  
+  &::placeholder {
+    color: #8a8a93;
+  }
+  &:focus {
+    border-color: $accent-color;
+  }
+}
+
+.file-input {
+  padding: 8px 15px;
+  font-size: 0.9rem;
+}
+.w-full { width: 100%; }
+.mt-3 { margin-top: 1rem; }
+.mt-1 { margin-top: 0.25rem; }
+
+/* Modal Form Layout */
+.form-row {
+  display: flex;
+  gap: 15px;
+  .half { flex: 1; }
+}
+
+/* PrimeVue DataTable Overrides */
+:deep(.glass-datatable) {
+  .p-datatable-header, .p-datatable-footer {
+    background: transparent;
+    border: none;
+  }
+  .p-datatable-thead > tr > th {
+    background: transparent;
+    color: #8a8a93;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    font-weight: 500;
+    padding: 15px;
+  }
+  .p-datatable-tbody > tr {
+    background: transparent;
+    color: var(--text-color);
+  }
+  .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+    padding: 15px;
+    font-size: 0.95rem;
+  }
+  .p-datatable-tbody > tr:hover {
+    background: color-mix(in srgb, var(--text-color) 5%, transparent);
+  }
+  .p-datatable-loading-overlay {
+    background: color-mix(in srgb, var(--background-color) 50%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  /* Pagination Glassmorphism Styles */
+  .p-paginator {
+    background: transparent;
+    border: none;
+    padding: 15px 0 0 0;
+    margin-top: 10px;
+
+    .p-paginator-current {
+      color: #8a8a93;
+      font-size: 0.85rem;
+    }
+
+    .p-paginator-page,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-first,
+    .p-paginator-prev {
+      background: transparent;
+      color: #8a8a93;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      transition: 0.2s ease;
+      
+      &:hover {
+        background: color-mix(in srgb, var(--text-color) 10%, transparent);
+        color: var(--text-color);
+      }
+      
+      &.p-highlight {
+        background: rgba(52, 152, 219, 0.15);
+        color: #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+      }
+    }
+
+    .p-dropdown {
+      background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+      border-radius: 8px;
+      
+      .p-dropdown-label { color: var(--text-color); }
+      .p-dropdown-trigger { color: #8a8a93; }
+      
+      &:hover { border-color: color-mix(in srgb, var(--text-color) 30%, transparent); }
+    }
+  }
+}
+
+.highlight { font-weight: 600; }
+.text-gray-400 { color: #9ca3af; }
+.mobile-only { display: none; }
+
+/* Actions */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+
+  .action-btn {
+    color: #3498db;
+    &:hover { background: rgba(52, 152, 219, 0.1) !important; }
+    
+    &.danger {
+      color: #ff4757;
+      &:hover { background: rgba(255, 71, 87, 0.1) !important; }
+    }
+    &.text-info {
+      color: #9b59b6;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover { background: rgba(155, 89, 182, 0.1) !important; }
+    }
+  }
+}
+
+.empty-state, .loading-state, .error-alert {
+  text-align: center;
+  padding: 50px;
+  border-radius: 12px;
+  margin-top: 20px;
+  i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-left-color: $accent-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.error-alert {
+  border-color: rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.05);
+  padding: 20px;
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    margin-right: 10px;
+    opacity: 1;
+  }
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
 /* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-  .mobile-only {
-    display: block;
-  }
+  :deep(.desktop-only) { display: none !important; }
+  .mobile-only { display: block; }
 
   .form-row {
     flex-direction: column;
     gap: 15px;
-  }
-  .glass-modal {
-    width: 95%;
-    padding: 20px;
-    margin: 10px auto;
   }
 
   .page-header {
@@ -442,75 +558,18 @@ td {
     flex-wrap: wrap;
   }
 
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-    width: 100%;
-  }
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  tr {
-    margin-bottom: 15px;
-    border-radius: 12px;
-  }
-
-  td {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Ensure top-alignment for multi-line text */
-    text-align: right;
-    padding: 12px 5px;
-    font-size: 0.9rem;
-    gap: 15px; /* Critical: Adds space between the label and content */
-  }
-  td:last-child {
-    border-bottom: none;
-  }
-
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #8a8a93;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    text-align: left;
-    flex-shrink: 0; /* Keeps the label from squishing */
-    margin-top: 2px;
-  }
-
-  .cell-content {
-    flex: 1; /* Take up all available space after the label */
-    min-width: 0; /* Magic flexbox fix for overflowing text */
-    align-items: flex-end;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-
   .headline-text {
-    white-space: normal; /* Allow long titles to stack */
+    white-space: normal;
+    word-break: break-word;
   }
-
-  .action-buttons {
+  
+  :deep(.p-paginator) {
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .page-header .titles h2 {
-    font-size: 1.5rem;
-  }
-  .glass-btn {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-  }
+  .page-header .titles h2 { font-size: 1.5rem; }
 }
 </style>

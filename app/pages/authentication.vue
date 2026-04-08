@@ -1,5 +1,7 @@
 <template>
   <div id="authPage">
+    <Toast position="top-right" />
+
     <div class="auth-wrapper">
       <div class="brand-header">
         <div class="logo-icon"><img src="~/assets/logo.png" alt="Logo" /></div>
@@ -17,14 +19,14 @@
         <div class="tab-switcher">
           <button
             :class="{ active: isLogin }"
-            @click="isLogin = true"
+            @click="switchTab(true)"
             type="button"
           >
             Login
           </button>
           <button
             :class="{ active: !isLogin }"
-            @click="isLogin = false"
+            @click="switchTab(false)"
             type="button"
           >
             Sign Up
@@ -34,126 +36,126 @@
         <form @submit.prevent="handleSubmit" class="auth-form">
           <div v-show="!isLogin" class="form-group">
             <label for="username">Full name</label>
-            <div class="input-wrapper">
-              <i class="bi bi-person"></i>
-              <input
+            <span class="p-input-icon-left w-full">
+              <i class="bi bi-person pl-3"></i>
+              <InputText
                 id="username"
                 v-model="form.username"
-                type="text"
                 placeholder="John Doe"
-                class="glass-input"
+                class="glass-input w-full pl-5"
                 :required="!isLogin"
               />
-            </div>
+            </span>
           </div>
 
           <div class="form-group">
             <label for="email">Email Address</label>
-            <div class="input-wrapper">
-              <i class="bi bi-envelope"></i>
-              <input
+            <span class="p-input-icon-left w-full">
+              <i class="bi bi-envelope pl-3"></i>
+              <InputText
                 id="email"
                 v-model="form.email"
                 type="email"
                 placeholder="you@run.edu.ng"
-                class="glass-input"
+                class="glass-input w-full pl-5"
+                :class="{ 'p-invalid': emailError }"
                 required
+                @input="validateEmail"
               />
-            </div>
+            </span>
+            <small v-if="emailError" class="p-error">{{ emailError }}</small>
           </div>
 
           <div class="form-group">
             <label for="password">Password</label>
-            <div class="input-wrapper">
-              <i class="bi bi-lock"></i>
-              <input
+            <div class="password-wrapper w-full">
+              <i class="bi bi-lock absolute-icon"></i>
+              <Password
                 id="password"
                 v-model="form.password"
-                type="password"
                 placeholder="••••••••"
-                class="glass-input"
+                class="glass-password w-full"
+                inputClass="glass-input w-full pl-5"
+                :feedback="false"
+                toggleMask
+                :class="{ 'p-invalid': passwordError }"
                 required
+                @input="validatePassword"
               />
             </div>
+            <small v-if="passwordError" class="p-error">{{ passwordError }}</small>
           </div>
 
           <template v-if="!isLogin">
-            <div class="form-group">
+            <div class="form-group mt-2">
               <label>I am registering as a:</label>
               <div class="role-selector">
-                <label>
-                  <input type="radio" v-model="form.role" value="student" />
-                  Student
-                </label>
-                <label>
-                  <input type="radio" v-model="form.role" value="alumni" />
-                  Alumni
-                </label>
+                <div class="flex align-items-center gap-2 cursor-pointer">
+                  <RadioButton v-model="form.role" inputId="roleStudent" name="role" value="student" />
+                  <label for="roleStudent" class="cursor-pointer mb-0">Student</label>
+                </div>
+                <div class="flex align-items-center gap-2 cursor-pointer ml-3">
+                  <RadioButton v-model="form.role" inputId="roleAlumni" name="role" value="alumni" />
+                  <label for="roleAlumni" class="cursor-pointer mb-0">Alumni</label>
+                </div>
               </div>
             </div>
 
-            <div v-if="form.role !== 'admin'" class="form-row">
+            <div v-if="form.role !== 'admin'" class="form-row mt-2">
               <div class="form-group half">
                 <label for="department">Department</label>
-                <select
+                <Dropdown
                   id="department"
                   v-model="form.studentInfo.department"
-                  class="glass-input glass-select"
+                  :options="departments"
+                  placeholder="Select Dept"
+                  class="glass-input w-full dropdown-override"
                   required
-                >
-                  <option value="" disabled>Select Dept</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Cyber Security">Cyber Security</option>
-                  <option value="Information Technology">
-                    Information Tech
-                  </option>
-                </select>
+                />
               </div>
 
               <div class="form-group half">
                 <label for="matric">Matric Number</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-card-text"></i>
-                  <input
+                <span class="p-input-icon-left w-full">
+                  <i class="bi bi-card-text pl-2"></i>
+                  <InputText
                     id="matric"
                     v-model="form.studentInfo.matricNumber"
-                    type="text"
                     placeholder="RUN/CMP/..."
-                    class="glass-input"
+                    class="glass-input w-full pl-5"
                     required
                   />
-                </div>
+                </span>
               </div>
             </div>
 
             <div v-if="form.role === 'alumni'" class="form-row">
               <div class="form-group half">
                 <label for="gradYear">Graduation Year</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-calendar"></i>
-                  <input
+                <span class="p-input-icon-left w-full">
+                  <i class="bi bi-calendar pl-2"></i>
+                  <InputText
                     id="gradYear"
                     v-model="form.alumniInfo.graduationYear"
-                    type="text"
                     placeholder="e.g. 2023"
-                    class="glass-input"
+                    class="glass-input w-full pl-5"
                     maxlength="4"
+                    keyfilter="int"
                   />
-                </div>
+                </span>
               </div>
 
               <div class="form-group half">
                 <label for="jobTitle">Job Title</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-briefcase"></i>
-                  <input
+                <span class="p-input-icon-left w-full">
+                  <i class="bi bi-briefcase pl-2"></i>
+                  <InputText
                     id="jobTitle"
                     v-model="form.alumniInfo.jobTitle"
-                    type="text"
                     placeholder="Software Engineer"
-                    class="glass-input"
+                    class="glass-input w-full pl-5"
                   />
-                </div>
+                </span>
               </div>
             </div>
           </template>
@@ -162,25 +164,16 @@
             <i class="bi bi-exclamation-circle"></i> {{ authStore.authError }}
           </div>
 
-          <button
+          <Button
             type="submit"
-            class="glass-btn submit-btn"
-            :disabled="authStore.isLoading"
-          >
-            <span v-if="authStore.isLoading" class="spinner"
-              ><i class="bi bi-arrow-repeat spin"></i
-            ></span>
-            {{
-              authStore.isLoading
-                ? "Processing..."
-                : isLogin
-                ? "Sign In"
-                : "Create Account"
-            }}
-          </button>
+            :label="isLogin ? 'Sign In' : 'Create Account'"
+            class="submit-btn"
+            :loading="authStore.isLoading"
+            :disabled="hasErrors"
+          />
         </form>
 
-        <NuxtLink to="/" class="glass-btn" style="margin-top: 15px;">
+        <NuxtLink to="/" class="back-link">
           <i class="bi bi-house-door"></i> Back to homepage
         </NuxtLink>
       </div>
@@ -189,22 +182,30 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import { useAuthStore } from "~/stores/useAuthStore";
+import { useToast } from "primevue/usetoast";
 
 definePageMeta({
   layout: "empty",
 });
 
 const authStore = useAuthStore();
+const toast = useToast();
 const isLogin = ref(true);
 
-// Centralized form state
+// Validation States
+const emailError = ref("");
+const passwordError = ref("");
+
+// Dropdown Options
+const departments = ["Computer Science", "Cyber Security", "Information Technology"];
+
 const form = reactive({
   username: "",
   email: "",
   password: "",
-  role: "student", // default role
+  role: "student",
   studentInfo: {
     department: "",
     matricNumber: "",
@@ -217,7 +218,45 @@ const form = reactive({
   },
 });
 
+const switchTab = (toLogin) => {
+  isLogin.value = toLogin;
+  emailError.value = "";
+  passwordError.value = "";
+  authStore.authError = null;
+};
+
+// --- Real-time Validation ---
+const validateEmail = () => {
+  if (!form.email) {
+    emailError.value = "Email is required";
+/*   } else if (!form.email.toLowerCase().endsWith("@run.edu.ng")) {
+    emailError.value = "Email must end with @run.edu.ng"; */
+  } else {
+    emailError.value = "";
+  }
+};
+
+const validatePassword = () => {
+  if (!form.password) {
+    passwordError.value = "Password is required";
+  } else if (form.password.length < 6) {
+    passwordError.value = "Password must be at least 6 characters";
+  } else {
+    passwordError.value = "";
+  }
+};
+
+const hasErrors = computed(() => {
+  return emailError.value !== "" || passwordError.value !== "";
+});
+
+
 const handleSubmit = async () => {
+  // Final validation check before submission
+  validateEmail();
+  validatePassword();
+  if (hasErrors.value) return;
+
   try {
     if (isLogin.value) {
       // --- LOGIN FLOW ---
@@ -225,42 +264,31 @@ const handleSubmit = async () => {
         email: form.email,
         password: form.password,
       });
-      alert("Login successful!");
+      
+      toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful!', life: 3000 });
 
       const userRole = response?.role;
 
-      if (userRole === "admin") {
-        navigateTo("/admin");
-      } else {
-        navigateTo("/");
-      }
+      // Small delay to let toast show before redirect
+      setTimeout(() => {
+        if (userRole === "admin") {
+          navigateTo("/admin");
+        } else {
+          navigateTo("/");
+        }
+      }, 800);
+
     } else {
       // --- SIGNUP FLOW ---
-
-      // 1. Build the base payload
       const payload = {
         username: form.username,
         email: form.email,
         password: form.password,
         role: form.role,
+        department: form.studentInfo.department,
+        matricNumber: form.studentInfo.matricNumber,
       };
 
-      // 2. Safely handle the Student Info requirement for the backend
-      if (form.role === "admin") {
-        // Backend workaround: send dummy data so the server doesn't crash
-        payload.studentInfo = {
-          department: "Administration",
-          matricNumber: "N/A",
-        };
-      } else {
-        // Real data for students and alumni
-        payload.studentInfo = {
-          department: form.studentInfo.department,
-          matricNumber: form.studentInfo.matricNumber,
-        };
-      }
-
-      // 3. If they are an Alumni, append the extra alumni data
       if (form.role === "alumni") {
         let formattedGradYear = form.alumniInfo.graduationYear;
         if (formattedGradYear && formattedGradYear.length === 4) {
@@ -275,27 +303,20 @@ const handleSubmit = async () => {
         };
       }
 
-      // 4. Fire the signup action
       await authStore.signup(payload);
-      alert("Account created successfully! Please log in.");
+      
+      toast.add({ severity: 'success', summary: 'Account Created', detail: 'Registration successful! Please log in.', life: 4000 });
 
       isLogin.value = true;
       form.password = "";
     }
   } catch (err) {
-    console.error("Auth error:", err);
-  }
-};
-
-const handleLogout = () => {
-  if (confirm("Are you sure you want to log out?")) {
-    authStore.logout();
+    toast.add({ severity: 'error', summary: 'Error', detail: authStore.authError || 'An error occurred.', life: 4000 });
   }
 };
 </script>
 
 <style lang="scss" scoped>
-/* Keeping your exact CSS, just adding a small margin-top inline to the logout button to space it out from the form */
 #authPage {
   display: flex;
   justify-content: center;
@@ -336,25 +357,19 @@ const handleLogout = () => {
       display: flex;
       justify-content: center;
       align-items: center;
+      img { width: 100%; height: 100%; object-fit: contain; }
     }
 
     h2 {
       margin: 0;
       font-size: 1.8rem;
       font-weight: 800;
-      background: linear-gradient(
-          135deg,
-          var(--text-color),
-          var(--text-gradient-color)
-        );
+      background: linear-gradient(135deg, var(--text-color), var(--text-gradient-color));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    p {
-      margin: 0;
-      font-size: 0.95rem;
-    }
+    p { margin: 0; font-size: 0.95rem; }
   }
 
   .auth-card {
@@ -380,6 +395,7 @@ const handleLogout = () => {
       font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.3s ease;
+      color: #8a8a93;
 
       &.active {
         background: $accent-color;
@@ -405,9 +421,7 @@ const handleLogout = () => {
     flex-direction: column;
     gap: 8px;
 
-    &.half {
-      flex: 1;
-    }
+    &.half { flex: 1; }
 
     label {
       font-size: 0.85rem;
@@ -415,59 +429,61 @@ const handleLogout = () => {
       margin-left: 5px;
     }
 
-    .input-wrapper {
+    /* Input Icon Alignment */
+    .p-input-icon-left,
+    .password-wrapper,
+    .search-full-wrapper {
       position: relative;
+      display: block;
+      width: 100%;
+
+      /* Targets all icons inside these wrappers */
+      i {
+        position: absolute !important;
+        left: 15px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: #8a8a93;
+        z-index: 2;
+        margin: 0 !important; /* Overrides any previous negative margins */
+      }
+    }
+
+    /* Ensure the inputs have enough padding so text doesn't type over the icon */
+    .glass-input, :deep(.p-inputtext) {
+      padding-left: 45px !important;
+    }
+    
+    /* PrimeVue Password Specific Override */
+    :deep(.glass-password) {
+      .p-password-input { 
+        padding-left: 45px !important; 
+      }
+      /* Keeps the visibility toggle eye icon on the right */
+      .p-password-mask { 
+        position: absolute;
+        color: #8a8a93; 
+        right: 15px; 
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    }
+
+    /* PrimeVue specific overrides */
+    :deep(.glass-password) {
+      .p-password-input { padding-left: 45px !important; }
+      .p-password-mask { color: #8a8a93; right: 15px; }
+    }
+
+    :deep(.dropdown-override) {
+      padding: 0;
       display: flex;
       align-items: center;
-
-      i {
-        position: absolute;
-        left: 15px;
-        color: #8a8a93;
-        font-size: 1.1rem;
-      }
-
-      .glass-input {
-        padding-left: 45px;
-      }
+      .p-dropdown-label { padding: 12px 15px; color: var(--text-color); }
+      .p-dropdown-trigger { color: #8a8a93; width: 3rem; }
     }
-
-    .glass-input {
-      width: 100%;
-       background: color-mix(
-            in srgb,
-            var(--alternate-color) 50%,
-            transparent
-          );
-          border: 1px solid
-            color-mix(in srgb, var(--text-color) 20%, transparent);
-          color: #8a8a93;
-      padding: 14px 15px;
-      border-radius: 12px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.3s, background 0.3s;
-
-      &::placeholder {
-        color: rgba(138, 138, 147, 0.5);
-      }
-      &:focus {
-        border-color: rgba($accent-color, 0.8);
-      }
-    }
-
-    select.glass-select {
-      appearance: none;
-      cursor: pointer;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="%238a8a93" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-      background-repeat: no-repeat;
-      background-position-x: 95%;
-      background-position-y: 50%;
-      option {
-        color: #000;
-        background: #fff;
-      }
-    }
+    
+    .p-error { color: #ff4757; font-size: 0.8rem; margin-left: 5px; }
   }
 
   .role-selector {
@@ -475,13 +491,7 @@ const handleLogout = () => {
     gap: 15px;
     margin-top: 5px;
 
-    label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
+    label { font-size: 0.9rem; }
   }
 
   .error-message {
@@ -496,52 +506,42 @@ const handleLogout = () => {
     gap: 8px;
   }
 
-  .submit-btn {
+  :deep(.submit-btn) {
     margin-top: 10px;
     width: 100%;
-    background: $accent-color;
-    border: none;
-    color: #fff;
+    background: $accent-color !important;
+    border: none !important;
+    color: #fff !important;
     padding: 15px;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
-    cursor: pointer;
     transition: opacity 0.3s, transform 0.2s;
-    display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 10px;
 
     &:hover:not(:disabled) {
       opacity: 0.9;
       transform: translateY(-2px);
     }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .spin {
-      animation: spin 1s linear infinite;
-    }
   }
 
-  @keyframes spin {
-    100% {
-      transform: rotate(360deg);
-    }
+  .back-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 25px;
+    color: #8a8a93;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+
+    &:hover { color: var(--text-color); }
   }
 
   @media (max-width: 480px) {
-    .auth-wrapper {
-      max-width: 100%;
-    }
-    .form-row {
-      flex-direction: column;
-      gap: 20px;
-    }
+    .auth-wrapper { max-width: 100%; }
+    .form-row { flex-direction: column; gap: 20px; }
   }
 }
 </style>

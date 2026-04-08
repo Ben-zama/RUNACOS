@@ -6,16 +6,14 @@
         <p>View and manage registered students and admins.</p>
       </div>
       <div class="header-actions">
-        <button
-          class="glass-btn refresh-btn"
+        <Button
+          icon="bi bi-arrow-clockwise"
+          class="p-button-rounded glass-action-btn"
           @click="usersStore.fetchUsers"
           :disabled="usersStore.isLoading"
-        >
-          <i
-            class="bi bi-arrow-clockwise"
-            :class="{ spin: usersStore.isLoading }"
-          ></i>
-        </button>
+          :class="{ 'spin-icon': usersStore.isLoading }"
+          aria-label="Refresh"
+        />
       </div>
     </div>
 
@@ -25,111 +23,133 @@
 
     <div class="glass-card table-card">
       <div class="table-filters">
-        <input
-          v-model="searchQuery"
-          type="search"
-          placeholder="Search by username..."
-          class="glass-input search-full"
-        />
+        <span class="p-input-icon-left search-full-wrapper">
+          <i class="bi bi-search" style="color: #8a8a93; margin-left: 10px;"></i>
+          <InputText
+            v-model="searchQuery"
+            placeholder="Search by username..."
+            class="glass-input search-full pl-5"
+          />
+        </span>
       </div>
 
-      <div
-        v-if="usersStore.isLoading && usersStore.users.length === 0"
-        class="loading-state"
+      <DataTable
+        :value="filteredUsers"
+        :loading="usersStore.isLoading"
+        responsiveLayout="scroll"
+        class="glass-datatable"
+        paginator
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
       >
-        <div class="spinner"></div>
-        <p>Loading users...</p>
-      </div>
-      <div v-else-if="filteredUsers.length === 0" class="empty-state">
-        <i class="bi bi-people"></i>
-        <p>No users match your search.</p>
-      </div>
+        <template #loading>
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading users...</p>
+          </div>
+        </template>
 
-      <div v-else class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Role</th>
-              <th class="desktop-only">Department</th>
-              <th class="desktop-only">Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in filteredUsers" :key="user.id || user._id">
-              <td class="highlight">{{ user.username }}</td>
-              <td>
-                <span
-                  class="pill"
-                  :class="user.role === 'admin' ? 'admin-pill' : 'student-pill'"
-                >
-                  {{ user.role === "admin" ? "Admin" : "Student" }}
-                </span>
-              </td>
-              <td class="desktop-only">
-                {{ user.studentInfo?.department || "N/A" }}
-              </td>
-              <td class="desktop-only">{{ user.email }}</td>
-              <td class="actions-cell">
-                <button class="action-btn" @click="openModal(user)">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button
-                  class="action-btn danger"
-                  @click="handleDelete(user.id || user._id)"
-                >
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <template #empty>
+          <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <p>No users match your search.</p>
+          </div>
+        </template>
 
-    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
-      <div class="modal">
-        <h3>Edit User</h3>
+        <Column field="username" header="Username">
+          <template #body="{ data }">
+            <span class="highlight">{{ data.username }}</span>
+          </template>
+        </Column>
 
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>Username (Full Name)</label>
-            <input
-              v-model="form.username"
-              type="text"
-              class="glass-input"
-              required
+        <Column field="role" header="Role">
+          <template #body="{ data }">
+            <Tag
+              :value="data.role === 'admin' ? 'Admin' : 'Student'"
+              :severity="data.role === 'admin' ? 'danger' : 'info'"
+              rounded
+              class="custom-tag"
+              :class="data.role === 'admin' ? 'admin-pill' : 'student-pill'"
             />
-          </div>
+          </template>
+        </Column>
 
-          <div class="form-group">
-            <label>Role</label>
-            <select
-              v-model="form.role"
-              class="glass-input glass-select"
-              required
-            >
-              <option value="student">Student</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+        <Column field="studentInfo.department" header="Department" class="desktop-only">
+          <template #body="{ data }">
+            {{ data.studentInfo?.department || "N/A" }}
+          </template>
+        </Column>
 
-          <div class="modal-actions">
-            <button type="button" class="btn-cancel" @click="closeModal">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn-save"
-              :disabled="usersStore.isLoading"
-            >
-              {{ usersStore.isLoading ? "Saving..." : "Save Changes" }}
-            </button>
-          </div>
-        </form>
-      </div>
+        <Column field="email" header="Email" class="desktop-only"></Column>
+
+        <Column header="Actions" :exportable="false" style="min-width: 8rem">
+          <template #body="{ data }">
+            <div class="actions-cell">
+              <Button
+                icon="bi bi-pencil"
+                class="p-button-rounded p-button-text action-btn"
+                @click="openModal(data)"
+              />
+              <Button
+                icon="bi bi-trash"
+                class="p-button-rounded p-button-text action-btn danger"
+                @click="handleDelete(data.id || data._id)"
+              />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
     </div>
+
+    <Dialog
+      v-model:visible="isModalOpen"
+      header="Edit User"
+      :modal="true"
+      :style="{ width: '100%', maxWidth: '400px' }"
+      class="glass-dialog"
+      :closable="false"
+    >
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group mt-3">
+          <label>Username (Full Name)</label>
+          <InputText
+            v-model="form.username"
+            class="glass-input w-full"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Role</label>
+          <select
+            v-model="form.role"
+            class="glass-input glass-select w-full"
+            required
+          >
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <Button
+            label="Cancel"
+            icon="bi bi-x"
+            class="p-button-text btn-cancel"
+            @click="closeModal"
+          />
+          <Button
+            type="submit"
+            :label="usersStore.isLoading ? 'Saving...' : 'Save Changes'"
+            icon="bi bi-check"
+            class="btn-save"
+            :loading="usersStore.isLoading"
+          />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
@@ -153,7 +173,6 @@ const filteredUsers = computed(() => {
   if (!usersStore.users) return [];
 
   return usersStore.users.filter((user) => {
-    // Only show users who are either students or admins
     if (user.role !== "student" && user.role !== "admin") return false;
 
     const safeUsername = user.username || "";
@@ -167,7 +186,6 @@ const filteredUsers = computed(() => {
 const isModalOpen = ref(false);
 const editingId = ref(null);
 
-// Form structured to ONLY contain patchable fields
 const form = reactive({
   username: "",
   role: "student",
@@ -181,11 +199,8 @@ const resetForm = () => {
 
 const openModal = (user) => {
   editingId.value = user.id || user._id;
-
-  // Safely populate form with only editable fields
   form.username = user.username || "";
   form.role = user.role || "student";
-
   isModalOpen.value = true;
 };
 
@@ -196,13 +211,10 @@ const closeModal = () => {
 
 const handleSubmit = async () => {
   try {
-    // Payload ONLY contains username and role
     const payload = {
       username: form.username,
       role: form.role,
     };
-
-    // Update the user via the store
     await usersStore.updateUser(editingId.value, payload);
     closeModal();
   } catch (err) {
@@ -226,10 +238,12 @@ const handleDelete = async (id) => {
   flex-direction: column;
   gap: 30px;
 }
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  
   .titles {
     h2 {
       font-size: 2rem;
@@ -240,10 +254,12 @@ const handleDelete = async (id) => {
       margin: 0;
     }
   }
+
   .header-actions {
     display: flex;
     gap: 10px;
-    .spin {
+
+    .spin-icon :deep(span.p-button-icon) {
       animation: spin 1s linear infinite;
     }
   }
@@ -253,77 +269,119 @@ const handleDelete = async (id) => {
   padding: 20px;
   border-radius: 12px;
 }
+
 .table-filters {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
-  .search-full {
+
+  .search-full-wrapper {
     width: 100%;
     max-width: 400px;
+    position: relative;
+    
+    i {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  .search-full {
+    width: 100%;
+    padding-left: 2.5rem !important; 
   }
 }
-.table-responsive {
-  overflow-x: auto;
+
+/* Glass Input Override */
+.glass-input {
+  background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+  padding: 10px 15px;
+  border-radius: 8px;
+  outline: none;
+  color: var(--text-color);
+  font-family: inherit;
+  
+  &::placeholder {
+    color: #8a8a93;
+  }
+  &:focus {
+    border-color: $accent-color;
+  }
+  option {
+    background: var(--background-color, #1a1a1a);
+    color: var(--text-color, #fff);
+  }
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-th {
-  padding: 15px;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-td {
-  padding: 15px;
-  font-size: 0.95rem;
-  vertical-align: middle;
+.w-full { width: 100%; }
+.mt-3 { margin-top: 1rem; }
+
+/* PrimeVue DataTable Overrides */
+:deep(.glass-datatable) {
+  .p-datatable-header, .p-datatable-footer {
+    background: transparent;
+    border: none;
+  }
+  .p-datatable-thead > tr > th {
+    background: transparent;
+    color: #8a8a93;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    font-weight: 500;
+    padding: 15px;
+  }
+  .p-datatable-tbody > tr {
+    background: transparent;
+    color: var(--text-color);
+  }
+  .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+    padding: 15px;
+    font-size: 0.95rem;
+  }
+  .p-datatable-tbody > tr:hover {
+    background: color-mix(in srgb, var(--text-color) 5%, transparent);
+  }
+  .p-datatable-loading-overlay {
+    background: color-mix(in srgb, var(--background-color) 50%, transparent);
+    backdrop-filter: blur(2px);
+  }
 }
 
-/* Custom Pill Styling for Roles */
-.pill {
+.highlight { font-weight: 600; }
+
+/* Custom Tag Overrides */
+.custom-tag {
   padding: 4px 10px;
-  border-radius: 20px;
   font-size: 0.8rem;
-  white-space: nowrap;
   font-weight: 600;
 }
 .student-pill {
-  background: rgba(52, 152, 219, 0.1);
-  color: #3498db;
+  background: rgba(52, 152, 219, 0.1) !important;
+  color: #3498db !important;
 }
 .admin-pill {
-  background: rgba(255, 71, 87, 0.1);
-  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1) !important;
+  color: #ff4757 !important;
 }
 
+/* Actions */
 .actions-cell {
   display: flex;
   gap: 8px;
+
   .action-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    transition: 0.2s;
     color: #3498db;
-    &:hover {
-      background: rgba(52, 152, 219, 0.1);
-    }
+    &:hover { background: rgba(52, 152, 219, 0.1) !important; }
+    
     &.danger {
       color: #ff4757;
-      &:hover {
-        background: rgba(255, 71, 87, 0.1);
-      }
+      &:hover { background: rgba(255, 71, 87, 0.1) !important; }
     }
   }
 }
 
-.empty-state,
-.loading-state,
-.error-alert {
+.empty-state, .loading-state, .error-alert {
   text-align: center;
   padding: 50px;
   border-radius: 12px;
@@ -334,6 +392,18 @@ td {
     opacity: 0.5;
   }
 }
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-left-color: $accent-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
 .error-alert {
   border-color: rgba(255, 71, 87, 0.3);
   color: #ff4757;
@@ -347,11 +417,9 @@ td {
   }
 }
 
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Responsiveness */
 @media (max-width: 600px) {
   .page-header {
     flex-direction: column;
@@ -360,17 +428,20 @@ td {
   }
   .table-filters {
     flex-direction: column;
-    .glass-input {
+    .search-full-wrapper {
       max-width: 100%;
     }
   }
+  
+  /* Make paginator stack on tiny screens */
+  :deep(.p-paginator) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 @media (max-width: 768px) {
-  .desktop-only {
+  :deep(.desktop-only) {
     display: none;
-  }
-  .table-responsive table {
-    width: 100%;
   }
 }
 </style>

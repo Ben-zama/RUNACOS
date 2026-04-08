@@ -31,7 +31,7 @@ import { useTheme } from "~/composables/useTheme";
 const { isDark } = useTheme();
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .theme-toggle {
   position: relative;
   display: flex;

@@ -5,29 +5,36 @@
         <h2>Faults</h2>
         <p>View reported faults</p>
       </div>
-      <button
-        class="refresh-btn glass-btn"
+      <Button
+        label="Refresh"
+        icon="bi bi-arrow-clockwise"
+        class="glass-action-btn primary-hover"
         @click="faultsStore.fetchFaults"
         :disabled="faultsStore.isLoading"
-      >
-        <i
-          class="bi bi-arrow-clockwise"
-          :class="{ spin: faultsStore.isLoading }"
-        ></i>
-        Refresh
-      </button>
+        :class="{ 'spin-icon': faultsStore.isLoading }"
+      />
     </div>
 
     <div v-if="faultsStore.error" class="error-alert">
       <i class="bi bi-exclamation-triangle"></i> {{ faultsStore.error }}
     </div>
 
-    <div
-      v-else-if="faultsStore.isLoading && faultsStore.faults.length === 0"
-      class="loading-state"
-    >
-      <div class="spinner"></div>
-      <p>Loading faults...</p>
+    <div v-else-if="faultsStore.isLoading && faultsStore.faults.length === 0" class="faults-grid">
+      <div v-for="i in 3" :key="i" class="fault-card skeleton-card">
+        <div class="card-header">
+          <Skeleton width="60%" height="1.5rem" />
+          <Skeleton width="20%" height="1.5rem" borderRadius="20px" />
+        </div>
+        <div class="card-body">
+          <Skeleton width="100%" height="1rem" class="mb-2" />
+          <Skeleton width="80%" height="1rem" class="mb-3" />
+          <Skeleton width="40%" height="1rem" />
+        </div>
+        <div class="card-footer">
+          <Skeleton width="30%" height="1rem" class="mb-2" />
+          <Skeleton width="90%" height="1rem" />
+        </div>
+      </div>
     </div>
 
     <div v-else-if="faultsStore.faults.length === 0" class="empty-state">
@@ -44,32 +51,33 @@
         <div class="card-header">
           <h3>{{ fault.title }}</h3>
           <div class="header-actions">
-            <span class="status-badge" :class="fault.status.toLowerCase()">
-              {{ fault.status }}
-            </span>
-            <button
-              class="icon-btn edit-btn"
+            <Tag 
+              :value="fault.status" 
+              class="custom-status-tag" 
+              :class="fault.status.toLowerCase()" 
+              rounded 
+            />
+            <Button
+              icon="bi bi-pencil-square"
+              class="p-button-rounded p-button-text action-btn edit-btn"
               @click="openEditModal(fault)"
               title="Update Status"
-            >
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button
-              class="icon-btn delete-btn"
+            />
+            <Button
+              icon="bi bi-trash"
+              class="p-button-rounded p-button-text action-btn delete-btn"
               @click="handleDelete(fault.id || fault._id)"
               title="Delete Fault"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
+            />
           </div>
         </div>
 
         <div class="card-body">
           <p class="description">{{ fault.description }}</p>
           <div class="meta-info">
-            <span class="student-id"
-              ><i class="bi bi-person-badge"></i> {{ fault.studentId }}</span
-            >
+            <span class="student-id">
+              <i class="bi bi-person-badge"></i> {{ fault.studentId }}
+            </span>
           </div>
         </div>
 
@@ -79,16 +87,19 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div v-if="isModalOpen" class="modal-overlay" @click.self="closeEditModal">
-    <div class="modal">
-      <h3>Update Fault</h3>
-
+    <Dialog
+      v-model:visible="isModalOpen"
+      header="Update Fault"
+      :modal="true"
+      :style="{ width: '100%', maxWidth: '450px' }"
+      class="glass-dialog"
+      :closable="false"
+    >
       <form @submit.prevent="handleUpdate">
-        <div class="form-group">
+        <div class="form-group mt-3">
           <label for="status">Status</label>
-          <select id="status" v-model="editingFault.status" class="glass-input">
+          <select id="status" v-model="editingFault.status" class="glass-input w-full">
             <option value="pending">Pending</option>
             <option value="in-progress">In Progress</option>
             <option value="resolved">Resolved</option>
@@ -97,29 +108,33 @@
 
         <div class="form-group">
           <label for="response">Admin Response</label>
-          <textarea
+          <Textarea
             id="response"
             v-model="editingFault.response"
-            class="glass-input"
+            class="glass-input w-full"
             placeholder="Explain the fix or next steps..."
             rows="4"
-          ></textarea>
+            autoResize
+          />
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn-cancel" @click="closeEditModal">
-            Cancel
-          </button>
-          <button
+          <Button
+            label="Cancel"
+            icon="bi bi-x"
+            class="p-button-text btn-cancel"
+            @click="closeEditModal"
+          />
+          <Button
             type="submit"
+            :label="faultsStore.isLoading ? 'Saving...' : 'Save Changes'"
+            icon="bi bi-check"
             class="btn-save"
-            :disabled="faultsStore.isLoading"
-          >
-            {{ faultsStore.isLoading ? "Saving..." : "Save Changes" }}
-          </button>
+            :loading="faultsStore.isLoading"
+          />
         </div>
       </form>
-    </div>
+    </Dialog>
   </div>
 </template>
 
@@ -141,9 +156,7 @@ onMounted(() => {
 
 const handleDelete = async (id) => {
   if (!id) return;
-  if (
-    confirm("Are you sure you want to permanently delete this fault report?")
-  ) {
+  if (confirm("Are you sure you want to permanently delete this fault report?")) {
     try {
       await faultsStore.deleteFault(id);
     } catch (err) {
@@ -154,7 +167,6 @@ const handleDelete = async (id) => {
 
 // --- Update Logic ---
 const openEditModal = (fault) => {
-  // Copy the data so we don't accidentally edit the live card before saving
   editingFault.value = {
     id: fault.id || fault._id,
     status: fault.status,
@@ -175,7 +187,7 @@ const handleUpdate = async () => {
     };
 
     await faultsStore.updateFault(editingFault.value.id, payload);
-    closeEditModal(); // Close modal on success
+    closeEditModal(); 
   } catch (err) {
     alert("Failed to update fault. Please try again.");
   }
@@ -183,6 +195,11 @@ const handleUpdate = async () => {
 </script>
 
 <style lang="scss" scoped>
+/* Box Sizing Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 .page-container {
   display: flex;
   flex-direction: column;
@@ -203,11 +220,8 @@ const handleUpdate = async () => {
     margin: 0;
   }
 
-  .refresh-btn {
-
-    .spin {
-      animation: spin 1s linear infinite;
-    }
+  .spin-icon :deep(span.p-button-icon) {
+    animation: spin 1s linear infinite;
   }
 }
 
@@ -220,11 +234,11 @@ const handleUpdate = async () => {
 
 .fault-card {
   background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
-      color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
-    );
-    border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    145deg,
+    color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%,
+    color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -243,72 +257,26 @@ const handleUpdate = async () => {
       margin: 0;
       font-size: 1.1rem;
       font-weight: 600;
+      line-height: 1.4;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 5px;
 
-      .status-badge {
-        font-size: 0.75rem;
-        padding: 4px 8px;
-        border-radius: 20px;
-        text-transform: capitalize;
-        font-weight: 500;
-        white-space: nowrap;
-
-        &.in-progress {
-          background: rgba(255, 193, 7, 0.2);
-          color: #ffc107;
-          border: 1px solid rgba(255, 193, 7, 0.3);
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        
+        &.edit-btn {
+          color: $accent-color;
+          &:hover { background: rgba($accent-color, 0.1) !important; }
         }
-        &.resolved {
-          background: rgba(40, 167, 69, 0.2);
-          color: #28a745;
-          border: 1px solid rgba(40, 167, 69, 0.3);
-        }
-        &.pending {
-          background: rgba(23, 162, 184, 0.2);
-          color: #17a2b8;
-          border: 1px solid rgba(23, 162, 184, 0.3);
-        }
-      }
-
-      .icon-btn.delete-btn {
-        background: transparent;
-        border: none;
-        color: #ff4757;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        opacity: 0.7;
-
-        &:hover {
-          opacity: 1;
-          background: rgba(255, 71, 87, 0.1);
-          transform: scale(1.05);
-        }
-      }
-
-      .icon-btn.edit-btn {
-        background: transparent;
-        border: none;
-        color: $accent-color;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        opacity: 0.8;
-
-        &:hover {
-          opacity: 1;
-          background: rgba(52, 152, 219, 0.1);
-          transform: scale(1.05);
+        &.delete-btn {
+          color: #ff4757;
+          &:hover { background: rgba(255, 71, 87, 0.1) !important; }
         }
       }
     }
@@ -348,17 +316,70 @@ const handleUpdate = async () => {
   }
 }
 
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
+/* Skeleton Overrides */
+.skeleton-card {
+  gap: 15px;
+  .mb-3 { margin-bottom: 15px; }
+  .mb-2 { margin-bottom: 10px; }
+}
+:deep(.p-skeleton) {
+  background-color: color-mix(in srgb, var(--secondary-color) 20%, transparent);
+  &::after {
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-color) 5%, transparent), transparent);
   }
 }
 
+/* Tag Overrides for Status */
+:deep(.custom-status-tag) {
+  text-transform: capitalize;
+  font-weight: 600;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  
+  &.in-progress { 
+    background: rgba(255, 193, 7, 0.2); 
+    color: #ffc107; 
+    border: 1px solid rgba(255, 193, 7, 0.3); 
+  }
+  &.resolved { 
+    background: rgba(40, 167, 69, 0.2); 
+    color: #28a745; 
+    border: 1px solid rgba(40, 167, 69, 0.3); 
+  }
+  &.pending { 
+    background: rgba(23, 162, 184, 0.2); 
+    color: #17a2b8; 
+    border: 1px solid rgba(23, 162, 184, 0.3); 
+  }
+}
+
+.empty-state, .error-alert {
+  text-align: center;
+  padding: 50px;
+  border-radius: 12px;
+  margin-top: 20px;
+  i { font-size: 3rem; margin-bottom: 10px; opacity: 0.5; }
+}
+.error-alert {
+  border-color: rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.05);
+  padding: 20px;
+  i { font-size: 1.5rem; margin-bottom: 0; margin-right: 10px; opacity: 1; }
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 600px) {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+  .glass-action-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
+import Aura from '@primeuix/themes/aura';
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -12,7 +13,20 @@ export default defineNuxtConfig({
     pageTransition: { name: "page", mode: "out-in" },
   },
 
-  modules: ["@pinia/nuxt", "@nuxt/fonts", "@vueuse/nuxt"],
+  modules: [
+    "@pinia/nuxt",
+    "@nuxt/fonts",
+    "@vueuse/nuxt",
+    '@primevue/nuxt-module'
+  ],
+
+  primevue: {
+        options: {
+            theme: {
+                preset: Aura
+            }
+        }
+    },
 
   css: ["~/assets/scss/main.scss", "~/assets/css/main.css"],
 
@@ -25,8 +39,11 @@ export default defineNuxtConfig({
         },
       },
     },
+    optimizeDeps: {
+      include: ["lenis", "vue3-marquee"],
+    },
     plugins: [tailwindcss()],
-    /*   server: {
+    server: {
       proxy: {
         "/api": {
           target: "https://runacos-api-889007588961.us-central1.run.app",
@@ -34,12 +51,12 @@ export default defineNuxtConfig({
           rewrite: (path) => path.replace(/^\/api/, ""), // Strips /api before sending to backend
         },
       },
-    }, */
-  }, 
+    },
+  },
   runtimeConfig: {
     public: {
-      /* apiBase: "/api", */
-      apiBase: "https://runacos-api-889007588961.us-central1.run.app",
+      apiBase: "/api",
+      /* apiBase: "https://runacos-api-889007588961.us-central1.run.app", */
     },
   },
 });

@@ -18,10 +18,8 @@
         </div>
         <div class="kpi-info">
           <span class="label">{{ stat.title }}</span>
-          <h3 class="value">
-            <span v-if="isLoadingAny" class="spinner-small"></span>
-            <span v-else>{{ stat.value }}</span>
-          </h3>
+          <Skeleton v-if="isLoadingAny" width="3rem" height="2rem" class="mt-1" />
+          <h3 v-else class="value">{{ stat.value }}</h3>
         </div>
       </div>
     </div>
@@ -33,49 +31,52 @@
             <h3>Recent Academic Resources</h3>
             <p class="subtitle">Latest study materials uploaded</p>
           </div>
-          <NuxtLink to="/admin/resources" class="view-all glass-btn sm"
-            >View All</NuxtLink
-          >
+          <Button 
+            as="router-link" 
+            to="/admin/resources" 
+            label="View All" 
+            icon="bi bi-arrow-right" 
+            iconPos="right" 
+            size="small" 
+            text 
+            class="view-all-btn"
+          />
         </div>
 
-        <div
-          v-if="
-            resourcesStore.isLoading && resourcesStore.resources.length === 0
-          "
-          class="empty-state"
+        <DataTable 
+          :value="recentResources" 
+          :loading="resourcesStore.isLoading" 
+          responsiveLayout="scroll"
+          class="glass-datatable"
         >
-          <span class="spinner"></span>
-        </div>
-        <div v-else-if="recentResources.length === 0" class="empty-state">
-          <p>No resources uploaded yet.</p>
-        </div>
-        <div v-else class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Title / Course</th>
-                <th class="desktop-only">Type</th>
-                <th>Date Added</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="res in recentResources" :key="res.id || res._id">
-                <td class="highlight">
-                  <div class="cell-content">
-                    <span class="font-bold">{{ res.title || "Untitled" }}</span>
-                    <span class="text-xs text-gray-400">{{
-                      res.courseCode
-                    }}</span>
-                  </div>
-                </td>
-                <td class="desktop-only">
-                  <span class="pill">{{ res.resourceType }}</span>
-                </td>
-                <td>{{ formatDate(res.createdAt || new Date()) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <template #empty>
+            <div class="empty-state">
+              <i class="bi bi-folder-x" style="font-size: 2rem; color: #8a8a93;"></i>
+              <p>No resources uploaded yet.</p>
+            </div>
+          </template>
+          
+          <Column field="title" header="Title / Course">
+            <template #body="{ data }">
+              <div class="cell-content">
+                <span class="font-bold">{{ data.title || "Untitled" }}</span>
+                <span class="text-xs text-gray-400">{{ data.courseCode }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="resourceType" header="Type" class="desktop-only">
+            <template #body="{ data }">
+              <Tag :value="data.resourceType" severity="info" rounded class="custom-tag" />
+            </template>
+          </Column>
+
+          <Column field="createdAt" header="Date Added">
+            <template #body="{ data }">
+              {{ formatDate(data.createdAt || new Date()) }}
+            </template>
+          </Column>
+        </DataTable>
       </div>
 
       <div class="right-column">
@@ -101,30 +102,40 @@
           </div>
         </div>
 
-        <div class="glass-card next-event-panel" v-if="nextUpcomingEvent">
+        <div class="glass-card next-event-panel" v-if="nextUpcomingEvent || eventsStore.isLoading">
           <div class="panel-header">
             <h3>Next Up</h3>
-            <span class="pulse-badge">Upcoming</span>
+            <Badge v-if="!eventsStore.isLoading" value="Upcoming" severity="danger" class="pulse-badge"></Badge>
           </div>
-          <div class="event-details">
+          
+          <div v-if="eventsStore.isLoading" class="event-details-skeleton">
+            <Skeleton width="80%" height="1.5rem" class="mb-2" />
+            <Skeleton width="50%" height="1rem" class="mb-2" />
+            <Skeleton width="40%" height="1rem" />
+          </div>
+
+          <div v-else class="event-details">
             <h4>{{ nextUpcomingEvent.title }}</h4>
             <div class="meta">
-              <span
-                ><i class="bi bi-calendar"></i>
-                {{ formatDate(nextUpcomingEvent.eventTime) }}</span
-              >
-              <span
-                ><i class="bi bi-geo-alt"></i>
-                {{ nextUpcomingEvent.eventType || "Campus" }}</span
-              >
+              <span>
+                <i class="bi bi-calendar"></i>
+                {{ formatDate(nextUpcomingEvent.eventTime) }}
+              </span>
+              <span>
+                <i class="bi bi-geo-alt"></i>
+                {{ nextUpcomingEvent.eventType || "Campus" }}
+              </span>
             </div>
           </div>
-          <NuxtLink
-            to="/admin/events"
-            class="glass-btn primary-hover w-full center"
-          >
-            Manage Event
-          </NuxtLink>
+          
+          <Button 
+            as="router-link" 
+            to="/admin/events" 
+            label="Manage Event" 
+            icon="bi bi-gear"
+            class="w-full glass-action-btn"
+            outlined
+          />
         </div>
       </div>
     </div>
@@ -195,7 +206,6 @@ const computedStats = computed(() => [
 // Get the 4 most recently added resources
 const recentResources = computed(() => {
   if (!resourcesStore.resources) return [];
-  // Assuming the API returns them in chronological order, we reverse to get newest first
   return [...resourcesStore.resources].reverse().slice(0, 4);
 });
 
@@ -205,7 +215,6 @@ const nextUpcomingEvent = computed(() => {
   const upcoming = eventsStore.events.filter((e) => e.status === "upcoming");
   if (upcoming.length === 0) return null;
 
-  // Sort by closest date
   upcoming.sort((a, b) => new Date(a.eventTime) - new Date(b.eventTime));
   return upcoming[0];
 });
@@ -246,6 +255,8 @@ const formatDate = (dateStr) => {
 .w-full {
   width: 100%;
 }
+.mt-1 { margin-top: 4px; }
+.mb-2 { margin-bottom: 8px; }
 
 /* KPI Row */
 .kpi-row {
@@ -261,7 +272,9 @@ const formatDate = (dateStr) => {
 
   .icon-wrapper {
     width: 55px;
+    min-width: 55px;
     height: 55px;
+    flex-shrink: 0;
     border-radius: 14px;
     display: flex;
     justify-content: center;
@@ -320,7 +333,7 @@ const formatDate = (dateStr) => {
   gap: 25px;
 }
 
-/* Tables */
+/* Tables & DataTables Override */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -335,37 +348,55 @@ const formatDate = (dateStr) => {
     font-size: 0.85rem;
     color: #8a8a93;
   }
+  .view-all-btn {
+    white-space: nowrap;
+  }
 }
-.table-responsive {
-  overflow-x: auto;
+
+:deep(.glass-datatable) {
+  .p-datatable-header, .p-datatable-footer {
+    background: transparent;
+    border: none;
+  }
+  .p-datatable-thead > tr > th {
+    background: transparent;
+    color: #8a8a93;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    font-weight: 500;
+    padding: 12px 15px;
+  }
+  .p-datatable-tbody > tr {
+    background: transparent;
+    color: var(--text-color);
+  }
+  .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+    padding: 15px;
+  }
+  .p-datatable-tbody > tr:hover {
+    background: color-mix(in srgb, var(--text-color) 5%, transparent);
+  }
+  .p-datatable-empty-message td {
+    text-align: center;
+    border: none;
+  }
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-th {
-  padding: 12px 15px;
-  font-weight: 500;
-  font-size: 0.85rem;
-}
-td {
-  padding: 15px;
-  font-size: 0.9rem;
-  vertical-align: middle;
-}
+
 .cell-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.font-bold {
-  font-weight: 600;
-}
-.text-xs {
-  font-size: 0.75rem;
-}
+.font-bold { font-weight: 600; }
+.text-xs { font-size: 0.75rem; }
 
+.custom-tag {
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+  color: var(--text-color);
+  border: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
+  font-weight: 500;
+  font-size: $text-sm;
+}
 
 /* Action Grid */
 .actions-panel h3 {
@@ -393,23 +424,16 @@ td {
     span {
       font-size: 0.85rem;
       font-weight: 500;
+      color: var(--text-color);
     }
     i {
       font-size: 1.5rem;
     }
 
-    .text-blue {
-      color: #3498db;
-    }
-    .text-green {
-      color: #2ed573;
-    }
-    .text-purple {
-      color: #9b59b6;
-    }
-    .text-orange {
-      color: #ffa502;
-    }
+    .text-blue { color: #3498db; }
+    .text-green { color: #2ed573; }
+    .text-purple { color: #9b59b6; }
+    .text-orange { color: #ffa502; }
 
     &:hover {
       background: color-mix(in srgb, var(--secondary-color) 50%, transparent);
@@ -421,7 +445,6 @@ td {
 
 /* Next Event Widget */
 .next-event-panel {
-
   .panel-header {
     display: flex;
     justify-content: space-between;
@@ -431,15 +454,10 @@ td {
       margin: 0;
       font-size: 1.1rem;
     }
-    .pulse-badge {
-      background: rgba(231, 76, 60, 0.2);
-      color: #e74c3c;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      animation: pulse 2s infinite;
-    }
+  }
+
+  .pulse-badge {
+    animation: pulse 2s infinite;
   }
 
   .event-details {
@@ -461,56 +479,49 @@ td {
     }
   }
 
-  .glass-btn {
-        background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
+  .event-details-skeleton {
+    margin-bottom: 25px;
+  }
+
+  :deep(.glass-action-btn) {
+    background: color-mix(in srgb, var(--secondary-color) 15%, transparent);
     border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    color: var(--text-color);
+    
+    &:hover {
+      background: color-mix(in srgb, var(--text-color) 10%, transparent);
+    }
   }
 }
 
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
+.empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #8a8a93;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
+
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(231, 76, 60, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
 /* Responsiveness */
 @media (max-width: 1200px) {
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .middle-row {
-    grid-template-columns: 1fr;
-  }
-  .right-column {
-    flex-direction: row;
-  }
-  .actions-panel,
-  .next-event-panel {
-    flex: 1;
-  }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .middle-row { grid-template-columns: 1fr; }
+  .right-column { flex-direction: row; }
+  .actions-panel, .next-event-panel { flex: 1; }
 }
 @media (max-width: 768px) {
-  .right-column {
-    flex-direction: column;
-  }
-  .desktop-only {
-    display: none;
-  }
+  .right-column { flex-direction: column; }
+  :deep(.desktop-only) { display: none; }
 }
 @media (max-width: 480px) {
-  .kpi-row {
-    grid-template-columns: 1fr;
-  }
+  .kpi-row { grid-template-columns: 1fr; }
 }
 </style>
