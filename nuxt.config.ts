@@ -43,7 +43,7 @@ export default defineNuxtConfig({
       include: ["lenis", "vue3-marquee"],
     },
     plugins: [tailwindcss()],
-    server: {
+    /* server: {
       proxy: {
         "/api": {
           target: "https://runacos-api-889007588961.us-central1.run.app",
@@ -51,12 +51,12 @@ export default defineNuxtConfig({
           rewrite: (path) => path.replace(/^\/api/, ""), // Strips /api before sending to backend
         },
       },
-    },
+    }, */
   },
   runtimeConfig: {
     public: {
-      apiBase: "/api",
-      /* apiBase: "https://runacos-api-889007588961.us-central1.run.app", */
+      /* apiBase: "/api", */
+      apiBase: "https://runacos-api-889007588961.us-central1.run.app",
     },
   },
 });

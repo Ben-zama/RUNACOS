@@ -58,15 +58,19 @@
       </div>
     </section>
 
-    <!-- Vision & mission -->
+    <!-- Mission & vision -->
     <section class="vision-mission" ref="visionMissionRef">
       <div class="header-text">
         <div class="pill">More about us</div>
         <h2>Our Vision, Mission & Core values</h2>
       </div>
 
-      <div class="container">
-        <div v-for="item in visionMission" :key="item.title" class="card">
+      <div class="container hierarchical-grid">
+        <div
+          v-for="(item, index) in visionMission"
+          :key="item.title"
+          :class="['card', index === 0 ? 'featured-card' : 'standard-card']"
+        >
           <div class="icon-wrapper">
             <i :class="item.icon"></i>
           </div>
@@ -80,33 +84,36 @@
 
     <!-- Departments -->
     <section class="departments" ref="departmentsRef">
-      <div class="header-text">
-        <div class="pill">Our Departments</div>
-        <h2>Computing Departments, reimagined</h2>
-        <p class="subtitle">
-          Our comprehensive programs are designed to address the complex
-          challenges of the 21st century. We provide students with foundational
-          and advanced knowledge across computing disciplines, empowering them
-          to innovate and lead.
-        </p>
-      </div>
-
-      <div class="bento-grid">
-        <div class="bento-card logo">
-          <img src="~/assets/logo.png" />
+      <div class="departments-wrapper">
+        <div class="header-col sticky-content">
+          <div class="pill">Our Departments</div>
+          <h2>Computing Departments, reimagined</h2>
+          <p class="subtitle">
+            Our comprehensive programs are designed to address the complex
+            challenges of the 21st century. We provide students with
+            foundational and advanced knowledge across computing disciplines,
+            empowering them to innovate and lead.
+          </p>
         </div>
-        <div
-          v-for="dept in academicDepartments"
-          :key="dept.id"
-          class="bento-card"
-          :class="dept.id"
-        >
-          <div class="graphic">
-            <img :src="dept.image" :alt="dept.title" />
-          </div>
-          <div class="content bottom-left">
-            <h3>{{ dept.title }}</h3>
-            <p>{{ dept.description }}</p>
+
+        <div class="cards-col">
+          <div
+            v-for="dept in academicDepartments"
+            :key="dept.id"
+            class="dept-card"
+          >
+            <div class="graphic">
+              <img :src="dept.image" :alt="dept.title" />
+            </div>
+            <div class="content-overlay">
+              <div class="text-content">
+                <h3>{{ dept.title }}</h3>
+                <p>{{ dept.description }}</p>
+              </div>
+              <div class="action-icon">
+                <i class="bi bi-arrow-up-right"></i>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -117,7 +124,7 @@
       <div class="pill">Executives</div>
       <h2>2025/2026 Student Executives</h2>
       <div class="container">
-        <Carousel :items="team" />
+        <TeamCarousel :items="team" />
       </div>
     </section>
   </div>
@@ -325,8 +332,7 @@ const { stop } = useIntersectionObserver(
 
 <style lang="scss">
 #aboutPage {
-  padding: 25px 0;
-
+  
   // about section
   .about {
     padding: 50px 15px;
@@ -373,7 +379,7 @@ const { stop } = useIntersectionObserver(
     background: var(--alternate-color);
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 40px;
     align-items: center;
 
     .header-text {
@@ -410,7 +416,7 @@ const { stop } = useIntersectionObserver(
       }
     }
 
-    .container {
+    .hierarchical-grid {
       width: 100%;
       display: grid;
       grid-template-columns: 1fr;
@@ -423,24 +429,23 @@ const { stop } = useIntersectionObserver(
           color-mix(in srgb, var(--alternate-color) 10%, transparent) 100%
         );
         backdrop-filter: blur(10px);
-        border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
-        border-radius: 16px;
-        padding: 30px 20px;
+        border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+        border-radius: 20px;
+        padding: 40px 30px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 15px;
+        gap: 20px;
         transition: transform 0.4s ease, border-color 0.4s ease,
           box-shadow 0.4s ease;
 
         &:hover {
-          transform: translateY(-8px);
-          border-color: rgba($accent-color, 0.5);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          transform: translateY(-5px);
+          border-color: rgba($accent-color, 0.4);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 
           .icon-wrapper {
             background: $accent-color;
+            transform: scale(1.1);
             i {
               color: #fff;
             }
@@ -448,20 +453,25 @@ const { stop } = useIntersectionObserver(
         }
 
         .icon-wrapper {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: color-mix(in srgb, var(--alternate-color) 50%, transparent);
-          border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+          width: 65px;
+          height: 65px;
+          border-radius: 16px; // Changed to soft square for a more premium tech feel
+          background: color-mix(
+            in srgb,
+            var(--alternate-color) 50%,
+            transparent
+          );
+          border: 1px solid
+            color-mix(in srgb, var(--text-color) 10%, transparent);
           display: flex;
           justify-content: center;
           align-items: center;
-          transition: 0.4s ease;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
           i {
             color: $accent-color;
             font-size: $text-2xl;
-            transition: 0.4s ease;
+            transition: color 0.4s ease;
           }
         }
 
@@ -470,32 +480,35 @@ const { stop } = useIntersectionObserver(
             font-family: $alternate-font;
             font-size: $text-xl;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
           }
           p {
             opacity: 0.8;
-            line-height: 1.6;
+            line-height: 1.7;
           }
         }
       }
     }
   }
 
-  // Departments
+  // Departments (Sticky Scroll Layout)
   .departments {
     padding: 50px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 50px;
 
-    .header-text {
+    .departments-wrapper {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 15px;
-      max-width: 1000px;
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .header-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
 
       .pill {
         color: $accent-color;
@@ -508,10 +521,15 @@ const { stop } = useIntersectionObserver(
       }
 
       h2 {
-        font-size: $text-2xl;
+        font-size: $text-3xl;
         font-weight: 900;
+        line-height: 1.2;
         letter-spacing: 1px;
-        background: linear-gradient(135deg, var(--text-color), var(--text-gradient-color));
+        background: linear-gradient(
+          135deg,
+          var(--text-color),
+          var(--text-gradient-color)
+        );
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -519,137 +537,103 @@ const { stop } = useIntersectionObserver(
       }
 
       .subtitle {
-        max-width: 800px;
         opacity: 0.8;
-        line-height: 1.6;
+        line-height: 1.7;
+        font-size: $text-lg;
+        max-width: 90%;
       }
     }
 
-    .bento-grid {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 15px;
+    .cards-col {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
 
-      .logo {
-        display: none !important;
-        justify-content: center;
-        align-items: center;
-        img {
-          width: 75%;
-          height: 75%;
-          object-fit: contain;
-        }
-      }
-
-      .bento-card {
+      .dept-card {
         position: relative;
-        display: flex;
-        flex-direction: column;
-        background: linear-gradient(
-          135deg,
-          #0b0f1a 0%,
-          #0d1323 40%,
-          #0a0e18 100%
-        );
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
-          inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
+        border-radius: 24px;
         overflow: hidden;
-        min-height: 350px;
-        transition: transform 0.4s ease, border-color 0.4s ease;
-        &::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          opacity: 0.05;
-          background-image: repeating-radial-gradient(
-            circle,
-            #ffffff 0px,
-            #ffffff 1px,
-            transparent 1px,
-            transparent 2px
-          );
-        }
-        &::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(45deg, #47466950, #33615d50);
-          mix-blend-mode: screen;
-          pointer-events: none;
-        }
+        aspect-ratio: 16 / 10;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
 
         &:hover {
           .graphic img {
-            transform: scale(1.05);
+            transform: scale(1.08);
+          }
+          .content-overlay {
+            background: linear-gradient(
+              to top,
+              rgba(0, 0, 0, 0.9) 0%,
+              rgba(0, 0, 0, 0.2) 100%
+            );
+            padding-bottom: 40px; // Slight lift effect
+          }
+          .action-icon {
+            background: $accent-color;
+            color: #fff;
+            transform: rotate(45deg);
           }
         }
 
         .graphic {
           position: absolute;
           inset: 0;
-          width: 100%;
-          height: 100%;
           z-index: 1;
 
           img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.6;
-            transition: transform 0.6s ease;
-          }
-
-          &::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, #111111 10%, transparent 60%);
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
           }
         }
 
-        .content {
-          position: relative;
+        .content-overlay {
+          position: absolute;
+          inset: 0;
           z-index: 2;
-          padding: 35px;
+          padding: 30px;
           display: flex;
-          flex-direction: column;
-          height: 100%;
+          justify-content: space-between;
+          align-items: flex-end;
+          background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.8) 0%,
+            transparent 60%
+          );
+          transition: all 0.4s ease;
 
-          h3 {
-            font-family: $alternate-font;
-            font-size: $text-xl;
-            font-weight: 600;
-            margin-bottom: 8px;
-          }
-
-          p {
-            font-size: $text-sm;
-            line-height: 1.5;
-            margin: 0;
-            opacity: 0.8;
-          }
-          &.centered {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: radial-gradient(
-              circle at center,
-              rgba(0, 0, 0, 0.5) 0%,
-              transparent 70%
-            );
+          .text-content {
+            max-width: 80%;
 
             h3 {
+              font-family: $alternate-font;
               font-size: $text-2xl;
+              font-weight: 700;
+              margin-bottom: 8px;
+              color: #fff;
+            }
+            p {
+              opacity: 0.85;
+              color: #eaeaea;
+              line-height: 1.5;
+              margin: 0;
             }
           }
 
-          &.bottom-left {
-            justify-content: flex-end;
-            align-items: flex-start;
-            text-align: left;
+          .action-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
           }
         }
       }
@@ -678,7 +662,11 @@ const { stop } = useIntersectionObserver(
       font-size: $text-2xl;
       font-weight: 900;
       letter-spacing: 1px;
-      background: linear-gradient(135deg, var(--alternate-color), var(--reverse-text-gradient-color));
+      background: linear-gradient(
+        135deg,
+        var(--alternate-color),
+        var(--reverse-text-gradient-color)
+      );
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -710,20 +698,19 @@ const { stop } = useIntersectionObserver(
 
     // Vision & mission
     .vision-mission {
-      padding: 75px 50px;
-
-      .header-text h2 {
-        font-size: $text-3xl;
-      }
-
-      .container {
+      .hierarchical-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-
-        .card:last-child:nth-child(odd) {
+        .featured-card {
           grid-column: span 2;
-          max-width: 50%;
-          margin: 0 auto;
+          flex-direction: row; // Horizontal layout for the featured card
+          align-items: center;
+
+          .content {
+            max-width: 70%;
+          }
+        }
+        .standard-card {
+          grid-column: span 1;
         }
       }
     }
@@ -746,7 +733,6 @@ const { stop } = useIntersectionObserver(
     }
 
     // Staff & Executive
-    .staff,
     .executives {
       padding: 50px;
       h2 {
@@ -786,77 +772,62 @@ const { stop } = useIntersectionObserver(
 
     // Vision & mission
     .vision-mission {
+      .hierarchical-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 1200px;
+
+        .featured-card {
+          grid-column: span 2;
+          flex-direction: row;
+          align-items: center;
+          padding: 50px;
+
+          .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            i {
+              font-size: $text-3xl;
+            }
+          }
+        }
+        .standard-card {
+          padding: 40px;
+        }
+      }
+    }
+
+    /* Departments */
+    .departments {
       padding: 100px 75px;
 
-      .header-text {
-        max-width: 800px;
-        margin-bottom: 20px;
+      .departments-wrapper {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .header-col {
+        width: 40%;
+        position: sticky;
+        top: 120px; // Adjust this based on your navbar height
+        padding-right: 40px;
 
         h2 {
           font-size: $text-4xl;
         }
       }
 
-      .container {
-        max-width: 1100px;
-        grid-template-columns: repeat(3, 1fr);
+      .cards-col {
+        width: 60%;
         gap: 40px;
 
-        .card {
-          padding: 50px 40px;
-
-          .icon-wrapper {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 10px;
-            i {
-              font-size: $text-3xl;
-            }
-          }
-
-          .content {
-            h3 {
-              font-size: $text-2xl;
-            }
-            p {
-              font-size: $text-lg;
-            }
-          }
+        .dept-card {
+          aspect-ratio: 16 / 9;
         }
       }
     }
 
-    // Departments
-    .departments {
-      padding: 100px 75px;
-
-      .header-text h2 {
-        font-size: $text-4xl;
-      }
-
-      .bento-grid {
-        max-width: 1500px;
-        grid-template-columns: repeat(10, 1fr);
-        grid-template-rows: repeat(2, 350px);
-        .logo {
-          display: flex !important;
-          grid-column: span 4;
-        }
-        .cs-card {
-          grid-column: span 6;
-        }
-
-        .cyber-card {
-          grid-column: span 6;
-        }
-        .it-card {
-          grid-column: span 4;
-        }
-      }
-    }
-
-    // Staff & Executives
-    .staff,
+    // Executives
     .executives {
       padding: 75px;
       h2 {
