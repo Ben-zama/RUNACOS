@@ -553,7 +553,7 @@ const { stop } = useIntersectionObserver(
         position: relative;
         border-radius: 24px;
         overflow: hidden;
-        aspect-ratio: 16 / 10;
+        aspect-ratio: 1 / 1;
         border: 1px solid rgba(255, 255, 255, 0.05);
         cursor: pointer;
 
@@ -723,11 +723,9 @@ const { stop } = useIntersectionObserver(
         font-size: $text-3xl;
       }
 
-      .bento-grid {
-        grid-template-columns: repeat(2, 1fr);
-
-        .cs-card {
-          grid-column: span 2;
+      .cards-col {
+        .dept-card {
+          aspect-ratio: 16 / 9;
         }
       }
     }
