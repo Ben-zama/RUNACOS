@@ -149,7 +149,7 @@ onMounted(() => {
   }
 
   .back-link {
-    margin-top: 450px;
+    margin-top: 400px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -177,14 +177,13 @@ onMounted(() => {
   .article-header {
     position: absolute;
     width: 100%;
-    height: 250px;
+    height: 400px;
     border-radius: 0 0 20px 20px;
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1;
-    margin-bottom: 300px;
 
     .gradient-sphere {
       position: absolute;

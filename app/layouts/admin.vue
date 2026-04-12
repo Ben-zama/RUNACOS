@@ -590,6 +590,12 @@ watch(
 }
 
 /* Global dashboard styles */
+
+.table-card {
+  width: 100%;
+  overflow: hidden;
+}
+
 /* Modal */
 /* PrimeVue Dialog overrides */
 .glass-dialog {
@@ -617,6 +623,7 @@ watch(
   flex-direction: column;
   gap: 8px;
   margin-bottom: 15px;
+  overflow-x: scroll;
   
   label {
     font-size: 0.85rem;

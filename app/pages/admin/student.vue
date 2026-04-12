@@ -234,6 +234,7 @@ const handleDelete = async (id) => {
 
 <style lang="scss" scoped>
 .page-container {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -266,8 +267,8 @@ const handleDelete = async (id) => {
 }
 
 .table-card {
-  padding: 20px;
   border-radius: 12px;
+  box-sizing: box-sizing;
 }
 
 .table-filters {

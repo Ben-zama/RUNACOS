@@ -104,7 +104,9 @@
             <div v-if="form.role !== 'admin'" class="form-row mt-2">
               <div class="form-group half">
                 <label for="department">Department</label>
-                <Dropdown
+                <span class="p-input-icon-left w-full">
+                  <i class="bi bi-collection"></i>
+                  <Dropdown
                   id="department"
                   v-model="form.studentInfo.department"
                   :options="departments"
@@ -112,6 +114,7 @@
                   class="glass-input w-full dropdown-override"
                   required
                 />
+                </span>
               </div>
 
               <div class="form-group half">
@@ -452,6 +455,11 @@ const handleSubmit = async () => {
     /* Ensure the inputs have enough padding so text doesn't type over the icon */
     .glass-input, :deep(.p-inputtext) {
       padding-left: 45px !important;
+      background: transparent;
+      color: var(--text-color);
+      &:hover, &:focus {
+        border-color: $accent-color;
+      }
     }
     
     /* PrimeVue Password Specific Override */
@@ -479,7 +487,8 @@ const handleSubmit = async () => {
       padding: 0;
       display: flex;
       align-items: center;
-      .p-dropdown-label { padding: 12px 15px; color: var(--text-color); }
+      color: var(--text-color) !important;
+      .p-dropdown-label { padding: 12px 15px; color: var(--text-color) !important; }
       .p-dropdown-trigger { color: #8a8a93; width: 3rem; }
     }
     
